@@ -16,6 +16,8 @@ import json
 redis                 = redis.StrictRedis( host = "127.0.0.1", port=6379, db = 1 )
 # need to establish free account on Send Grid
 redis.hset("MEDIA_DRIVERS","SendGrid",json.dumps({"user_name":"xxxx","password":'xxxxx',"test_user":"xxx@yyyy"}))
+# need to establish free account on trillo
+redis.hset("MEDIA_DRIVERS","Trillo",json.dumps({"accountSID":"xxx","authToken":'xxx',"twilio_phone_number":"1xxxxxxx","test_number":"xxxx"}))
 redis.hset("AI_rabbitmq","username", "xxxxx"        )
 redis.hset("AI_rabbitmq","password", 'xxxx'     )
 redis.hset("AI_rabbitmq","port",      5671           ) 
