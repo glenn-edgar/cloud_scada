@@ -29,7 +29,7 @@ class Send_Email(  ):
            print "email status",status,error_code        
        except:
            print "exception raised email",status,error_code
-
+ 
 if __name__ == "__main__":
    print datetime.datetime.today()
    sendEmail = Send_Email()
