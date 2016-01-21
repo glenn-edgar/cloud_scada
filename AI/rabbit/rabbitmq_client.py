@@ -17,7 +17,7 @@ class RabbitMq_Client(object):
       
          self.queue     = queue
 
-         print server,port,username,password,vhost,queue
+         #print server,port,username,password,vhost,queue
          credentials = pika.PlainCredentials( username, password )
          parameters = pika.ConnectionParameters( server,
                                                  port,  #ssl port

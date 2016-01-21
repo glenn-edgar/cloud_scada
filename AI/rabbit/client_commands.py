@@ -167,8 +167,8 @@ class Status_Alert_Cmds():
          return self.send_command( "REDIS_HSET", command_data )
    #
    #  Array of dictionary where each element is dictionary key
-   #       key    = i["key"]
-   #       number = i["number"]
+   #       key    = i["hash"]
+   #       
    #
    # returns array of dictionarys
     

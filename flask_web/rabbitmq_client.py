@@ -80,6 +80,7 @@ if __name__ == "__main__":
    server                = redis_startup.hget("AI_rabbitmq","server"   )
    port                  = int(redis_startup.hget("AI_rabbitmq","port"     ) )
    queue                 = redis_startup.hget("AI_rabbitmq","queue" )
+   # vhost is not defined --- possible error for test condition
    remote_interface = RabbitMq_Client(server,port,username,password,vhost,queue)
    print "rabbitmq queue constructed"
    remote_interface.close()

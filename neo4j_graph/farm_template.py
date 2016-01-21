@@ -19,9 +19,9 @@ class Construct_Farm():
    def end_site( self ):
       self.bc.pop_workspace()
 
-   def construct_controller( self,name,web_queue,rpc_queue,local_ip,controller_type):
+   def construct_controller( self,name,web_queue,rpc_queue,local_ip,controller_type,vhost):
        self.bc.construct_node(  push_workspace=True,relationship="CONTROLLER", label="CONTROLLER", name=name, 
-               properties ={"web_queue":web_queue, "rpc_queue":rpc_queue,"local_ip":local_ip,"controller_type":controller_type})
+               properties ={"web_queue":web_queue, "rpc_queue":rpc_queue,"local_ip":local_ip,"controller_type":controller_type,"vhost":vhost})
 
 
    def end_controller( self ):

@@ -51,6 +51,8 @@ class Build_Configuration():
        
 
 
+
+
 class Query_Configuration():
 
    def __init__( self, graph=None):
@@ -99,8 +101,48 @@ class Query_Configuration():
           graph_object.properties[i] = new_properties[i]
        graph_object.push()
 
+   # concept of workspace name is a string which ensures unique name
+   # the name is essentially the directory structure of the tree
+   def construct_merge_node(self, push_workspace,relationship, label, name, new_properties ):
+       workspace_name = self.get_workspace_name(name)
+       node = self.graph.find_one(label ,property_key="name",property_value=name) 
+       if self.graph.find_one(label ,property_key="name",property_value=name) != None:
+           for i in properties.keys():
+               node.properties[i]=properties[i]
+               node.push()
+           return node
+       else:
+           node = Node(label)
+           node.properties["workspace_name"]=workspace_name
+           node.properties["name"] = name
+           for i in properties.keys():
+               node.properties[i]=properties[i]
+           self.graph.create(node)
+           if len(self.workspace) !=0:
+               relation_enity = Relationship( self.get_workspace_node(),relationship,node) 
+           self.graph.create( relation_enity )
+           if push_workspace == True:
+               self.workspace_name.append(name)
+               self.workspace.append(node)
+           return node
 
 
 
+   def match_relation_property( self, label_name, property_name, property_value, label ):
+       query_string = "MATCH (n:"+label_name+'   { '+property_name +':"'+property_value+'"})-[*]->(o:'+label+')   RETURN o'  
+       print "query_string",query_string 
+       results =  self.graph.cypher.execute(query_string)
+       return_value = []
+       for i in results:
+           return_value.append(i[0])
+       return return_value
+       
+'''
+nicole = graph.merge_one('Person', 'name', 'Nicole')
+nicole['hair'] = 'blonde'
+Then you need to push those changes to the graph; cast is inappropriate for updating properties on something that is already a py2neo Node object:
+
+nicole.push()
+'''
 if __name__ == "__main__" :
    pass
