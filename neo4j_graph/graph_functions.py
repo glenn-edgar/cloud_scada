@@ -130,7 +130,6 @@ class Query_Configuration():
 
    def match_relation_property( self, label_name, property_name, property_value, label ):
        query_string = "MATCH (n:"+label_name+'   { '+property_name +':"'+property_value+'"})-[*]->(o:'+label+')   RETURN o'  
-       print "query_string",query_string 
        results =  self.graph.cypher.execute(query_string)
        return_value = []
        for i in results:

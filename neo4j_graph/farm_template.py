@@ -46,13 +46,13 @@ class Construct_Farm():
        schedule_node = self.bc.construct_node(  push_workspace=True,relationship="SCHEDULE", label="IRRIGATION_SCHEDULE", name=name, 
                        properties ={"number":number})
        for i in range(0,number):
-           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_FLOW_STEP", label="IRRIGATION_FLOW_STEP", name= "FLOW/"+str(i+1), 
+           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_FLOW_STEP", label="IRRIGATION_FLOW_STEP", name= str(i+1), 
                        properties ={ })
-           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_COIL_STEP", label="IRRIGATION_COIL_STEP", name= "COIL/"+str(i+1), 
+           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_COIL_STEP", label="IRRIGATION_COIL_STEP", name= str(i+1), 
                        properties ={ })
-           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_FLOW_STEP_LIMIT", label="IRRIGATION_FLOW_STEP_LIMIT", name= "FLOW/"+str(i+1), 
+           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_FLOW_STEP_LIMIT", label="IRRIGATION_FLOW_STEP_LIMIT", name= str(i+1), 
                        properties ={ })
-           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_COIL_STEP_LIMIT", label="IRRIGATION_COIL_STEP_LIMIT", name= "COIL/"+str(i+1), 
+           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_COIL_STEP_LIMIT", label="IRRIGATION_COIL_STEP_LIMIT", name= str(i+1), 
                        properties ={ })
 
        self.bc.pop_workspace()
@@ -81,11 +81,20 @@ class Construct_Farm():
    def add_remote( self, name,modbus_address,irrigation_station_number):
        self.bc.construct_node(  push_workspace=True,relationship="REMOTE", label="REMOTE", name=name, 
                properties ={"name":name,"modbus_address":modbus_address,"irrigation_station_number":irrigation_station_number })
+       self.bc.construct_node(  push_workspace=True,relationship="IRRIGATION_VALVE_CURRENT_HEADER", label="IRRIGATION_VALVE_CURRENT_HEADER", name = "valve_current_header", 
+           properties ={ })           
        for i in range(0,irrigation_station_number):
-           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_VALVE_CURRENT", label="IRRIGATION_VALVE_CURRENT", name = "VALVE_CURRENT/"+str(i+1), 
-           properties ={ "active":False })           
-           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_VALVE_CURRENT_LIMIT", label="IRRIGATION_VALVE_CURRENT_LIMIT", name= "VALVE_CURRENT_LIMIT/"+str(i+1), 
+           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_VALVE_CURRENT", label="IRRIGATION_VALVE_CURRENT", name = str(i+1), 
+           properties ={ "active":False })         
+       self.bc.pop_workspace()
+
+       self.bc.construct_node(  push_workspace=True,relationship="IRRIGATION_VALVE_CURRENT_HEADER", label="IRRIGATION_VALVE_CURRENT_LIMIT_HEADER", name = "valve_current_limit_header", 
+           properties ={ })           
+       for i in range(0,irrigation_station_number):  
+           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_VALVE_CURRENT_LIMIT", label="IRRIGATION_VALVE_CURRENT_LIMIT", name= str(i+1), 
            properties ={ "active":False  })
+  
+       self.bc.pop_workspace()
        self.bc.pop_workspace()
 
 

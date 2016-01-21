@@ -73,14 +73,49 @@ class Access_Remote_Redis_Structures():
        for i in controller_list:
            remote_list = qc.match_relation_property( "CONTROLLER","name", i.properties["name"],"REMOTE" )
            for j in remote_list:
-                print j.properties["workspace_name"]
-           quit()
-                # form key search "log_data:resistance_log_limit:"+j.properties+":"*
-                # for key in key list 
-                #    get redis_value
-                #    store_node
-              
-               
+               irrigation_valve_current       = qc.match_relation_property( "REMOTE","name", j.properties["name"],"IRRIGATION_VALVE_CURRENT" )
+                
+               # form key search "log_data:resistance_log_limit:"+j.properties["name"]+":"*
+               # form array of numbers array of numbers
+               # convert array of numbers to a set
+                
+               valid_set = set([])             
+
+               for k in irrigation_valve_current:
+                   print k.properties["name"],k.properties["workspace_name"]
+                   if str( k.properties["name"] ) in valid_set:
+                       k.properties["active"]    = True
+                       
+                       print "made it here set",k.properties["name"],k.properties["workspace_name"]
+                       # do look up and set current
+                       # do look up and set current limit
+                   else:
+                       k.properties["active"]    = False
+                       
+                   k.push()
+
+               irrigation_valve_current       = qc.match_relation_property( "REMOTE","name", j.properties["name"],"IRRIGATION_VALVE_CURRENT_LIMIT" )
+                
+               # form key search "log_data:resistance_log_limit:"+j.properties["name"]+":"*
+               # form array of numbers array of numbers
+               # convert array of numbers to a set
+                
+               valid_set = set([])             
+
+               for k in irrigation_valve_current:
+                   print k.properties["name"],k.properties["workspace_name"]
+                   if str( k.properties["name"] ) in valid_set:
+                       k.properties["active"]    = True
+                       
+                       print "made it here set",k.properties["name"],k.properties["workspace_name"]
+                       # do look up and set current
+                       # do look up and set current limit
+                   else:
+                       k.properties["active"]    = False
+                       
+                   k.push()
+                  
+                
                     
 
 
