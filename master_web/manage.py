@@ -35,7 +35,7 @@ class FlaskRealmDigestDB(authdigest.RealmDigestDB):
 app = Flask(__name__)
 app.config['SECRET_KEY']      = startup_dict["SECRET_KEY"]
 app.config["DEBUG"]           = startup_dict["DEBUG"]
-app.template_folder           = None
+app.template_folder           = "templates"
 app.static_folder             = 'static'
 
 authDB = FlaskRealmDigestDB(startup_dict["RealmDigestDB"])
@@ -119,9 +119,31 @@ def save_app_file(file_name):
 
 @app.route('/')
 @authDB.requires_auth
+def home():
+   vhosts_list = redis_startup.lrange("vhosts",0,-1)
+   port_list = []
+   for i in vhosts_list:
+       port = redis_startup.hget(i,"web_port" )
+       port_list.append(port)
+   print vhosts_list
+   print port_list
+
+   return render_template("index",vhosts_list = vhosts_list ,port_list = port_list )
+    
+@app.route('/index.html')
+@authDB.requires_auth
 def index():
-   return app.send_static_file(os.path.join('html', "index.html"))
- 
+   vhosts_list = redis_startup.lrange("vhosts",0,-1)
+   port_list = []
+   for i in vhosts_list:
+       port = redis_redis_startup.hget(i,"web_port" )
+       port_list.append(port)
+   print vhosts_list
+   print port_list
+   return render_template("index",vhosts_list = vhosts_list ,port_list = port_list )
+
+
+
 
 @app.route('/manage_all_groves')
 @authDB.requires_auth
