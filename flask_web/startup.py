@@ -15,6 +15,7 @@ vhosts     = redis_1.lrange("vhosts",0,-1)
 vhost_list = []
 for i in vhosts:
    web_type = redis_1.hget("LaCima","type" )
+
    if web_type == "IRRIGATION_TYPE":
        vhost_list.append( i )
 
