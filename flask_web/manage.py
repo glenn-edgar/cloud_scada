@@ -73,6 +73,16 @@ def home():
    else:
       return "No Connections"
 
+@app.route('/index.html',methods=["GET"])
+@authDB.requires_auth
+def index():
+   station_control = get_rabbit_interface( vhost )
+   return_value = station_control.get_web_page("/")
+   if return_value[0] == True:
+      return return_value[1]
+   else:
+      return "No Connections"
+
 '''
  
 ######################### Set up Static RoutesFiles ########################################
