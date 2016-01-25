@@ -40,29 +40,48 @@ class Construct_Farm():
                                     name="SYSTEM_EVENT_QUEUE",
                                     properties = {} )
 
+   def add_schedule_header( self ):
+       return self.bc.construct_node(  push_workspace=True,relationship="Schedule_Header", label="Schedule_Header", name="Schedule_Header", 
+               properties ={})
+
+   def end_schedule_header( self ):
+       self.bc.pop_workspace()   
 
 
-   def add_schedule( self,name,number):
-       schedule_node = self.bc.construct_node(  push_workspace=True,relationship="SCHEDULE", label="IRRIGATION_SCHEDULE", name=name, 
+   def add_schedule( self,name,number,flow_sensor_names):
+       schedule_node = self.bc.construct_node(  push_workspace=True,relationship="IRRIGATION_SCHEDULE", label="IRRIGATION_SCHEDULE", name=name, 
                        properties ={"number":number})
        for i in range(0,number):
-           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_FLOW_STEP", label="IRRIGATION_FLOW_STEP", name= str(i+1), 
+           self.bc.construct_node(  push_workspace=True,relationship="STEP", label="STEP", name=str(i+1), 
+                       properties ={"number":number})
+           self.bc.construct_node(  push_workspace=False,relationship="FLOW", label="FLOW", name="FLOW", 
                        properties ={ })
-           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_COIL_STEP", label="IRRIGATION_COIL_STEP", name= str(i+1), 
+           self.bc.construct_node(  push_workspace=False,relationship="COIL_CURRENT", label="COIL_CURRENT", name= "COIL_CURRENT", 
                        properties ={ })
-           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_FLOW_STEP_LIMIT", label="IRRIGATION_FLOW_STEP_LIMIT", name= str(i+1), 
+           self.bc.construct_node(  push_workspace=False,relationship="COIL_CURRENT_LIMIT", label="COIL_CURRENT_LIMIT", name= "COIL_CURRENT_LIMIT",
                        properties ={ })
-           self.bc.construct_node(  push_workspace=False,relationship="IRRIGATION_COIL_STEP_LIMIT", label="IRRIGATION_COIL_STEP_LIMIT", name= str(i+1), 
-                       properties ={ })
-
+           
+           self.bc.construct_node( push_workspace = True,relationship="FLOW_SENSOR_LIMIT_HEADER", label = "FLOW_SENSOR_LIMIT_HEADER", name = "FLOW_SENSOR_LIMIT_HEADER", properties={} )
+           for j in flow_sensor_names:
+               self.bc.construct_node( push_workspace = False, relationship="FLOW_SENSOR_LIMIT", label = "FLOW_SENSOR_LIMIT", name = j, properties={} )
+           self.bc.pop_workspace()
+           self.bc.pop_workspace()
+  
        self.bc.pop_workspace()
 
+
+   def add_flow_sensor_header( self ):
+       return self.bc.construct_node(  push_workspace=True,relationship="FLOW_SENSOR_HEADER", label="FLOW_SENSOR_HEADER", name="flow_sensor_header", 
+               properties ={})
+
+   def end_flow_sensor_header( self ):
+       self.bc.pop_workspace()   
 
    def add_flow_sensor( self,name,controller,io,conversion_factor):
        return self.bc.construct_node(  push_workspace=False,relationship="FLOW_SENSOR", label="FLOW_SENSOR", name=name, 
                properties ={"name":name,"controller":controller,"io":io,"conversion_factor":conversion_factor})
 
-
+   
 
    def add_udp_io_sever(self, name, ip,remote_type, port ):
        return self.bc.construct_node(  push_workspace=True,relationship="UDP_IO_SERVER", label="UDP_IO_SERVER", name=name, 

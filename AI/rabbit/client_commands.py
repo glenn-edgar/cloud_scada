@@ -34,7 +34,9 @@ class Status_Alert_Cmds():
      self.cmds["REDIS_HSET"]                   = self.redis_hset
      self.cmds["REDIS_HGET_ALL"]               = self.redis_hget_all    
      self.cmds["REDIS_HDEL"]                   = self.redis_hdel
-     
+     self.cmds["REDIS_KEYS"]                   = self.redis_keys     
+     self.cmds["REDIS_HKEYS"]                  = self.redis_hkeys
+
    def  send_command( self, command, data ):
        command_data             = {}
        command_data["command"]  = command
@@ -170,11 +172,29 @@ class Status_Alert_Cmds():
    #       key    = i["hash"]
    #       
    #
-   # returns array of dictionarys
+   # returns array of dictionary element
     
    def redis_hget_all( self, command_data):
          return self.send_command( "REDIS_HGET_ALL", command_data )
+   #
+   #  Array of dictionary where each element is dictionary key
+   #       key    = i["hash"]
+   #       
+   #
+   # returns array of dictionary keys
 
+   def redis_hkeys( self, command_data):
+         return self.send_command("REDIS_HKEYS",command_data)
+   #
+   #  Array of patterns where each key matches that pattern
+   #       key    = i["keys"]
+   #       
+   #
+   # returns array of dictionary keys
+
+   def redis_keys( self, command_data):
+        return self.send_command( "REDIS_KEYS",command_data)
+     
 
 
 

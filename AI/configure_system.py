@@ -34,13 +34,18 @@ if __name__ == "__main__" :
    cf.add_event_queue()
    cf.add_system_event_queue()
 
-   # need to automatically construct these files in the future
-   cf.add_schedule( name='fruit_tree_low_water',number=11)
-   cf.add_schedule( name='flowers',number=14)
-   cf.add_schedule( name='clean-filter',number=6)
-   cf.add_schedule( name='house',number=5)
-
+   cf.add_flow_sensor_header()
    cf.add_flow_sensor(name='main_sensor',controller='satellite_1',io=1,conversion_factor = 0.0224145939)
+   cf.end_flow_sensor_header(  )
+
+   # need to automatically construct these files in the future
+   cf.add_schedule_header()
+   cf.add_schedule( name='fruit_trees_low_water',number=11,flow_sensor_names = ['main_sensor'])
+   cf.add_schedule( name='flowers',number=14,flow_sensor_names = ['main_sensor'])
+   cf.add_schedule( name='clean-filter',number=6,flow_sensor_names = ['main_sensor'])
+   cf.add_schedule( name='house',number=5,flow_sensor_names = ['main_sensor'])
+   cf.end_schedule_header()
+
    
 
    #
