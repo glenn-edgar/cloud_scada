@@ -46,7 +46,9 @@ class Update_Irrigation_Valve_Current_Draw():
            temp_list = i.split(":")
            valid_list.append(temp_list[-1])
 
+
        for i in valve_list:
+
            if i.properties["name"] in valid_list:
                index = valid_list.index(i.properties["name"])
                if value_function != None:
@@ -61,13 +63,17 @@ class Update_Irrigation_Valve_Current_Draw():
    def update_coil_current( self  ):
        controller_list = qc.match_labels("CONTROLLER")
        for i in controller_list:
+
+      
            remote_list = qc.match_relation_property( "CONTROLLER","name", i.properties["name"],"REMOTE" )
            for j in remote_list:
+
                valve_list       = qc.match_relation_property( "REMOTE","name", j.properties["name"],"IRRIGATION_VALVE_CURRENT" )
                self.get_coil_current_help_a( i.properties["vhost"], valve_list,"log_data:resistance_log:"+j.properties['name']+":*",self.get_coil_value_function_1)
+
                valve_list       = qc.match_relation_property( "REMOTE","name", j.properties["name"],"IRRIGATION_VALVE_CURRENT_LIMIT" )
                self.get_coil_current_help_a( i.properties["vhost"], valve_list,"log_data:resistance_log_limit:*"+j.properties['name']+":*",self.get_coil_value_function_2) 
-                
+               
 
                
 
