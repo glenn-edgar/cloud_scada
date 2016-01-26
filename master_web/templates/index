@@ -1,0 +1,32 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+        <link rel="shortcut icon" href="/static/favicon.ico">
+	<title>Select Web Action</title>
+	<link rel="stylesheet"  href="/static/css/jquery.mobile-1.3.1.min.css" />
+        <script type="text/javascript" src="/static/js_library/jquery-2.0.1.js"></script>
+	<script type="text/javascript" src="/static/js_library/jquery.mobile-1.3.1.js"></script>
+	
+</head> 
+<body> 
+
+<div data-role="page"> 
+
+    <div data-role="header">
+	<h1>Select Web Function</h1>
+    </div><!-- /header -->
+    <div  data-theme="a"  data-iconpos="right" data-collapsed="True" data-content-theme="c">
+        <ul data-role="listview">
+             <li><a href ='/manage_all_groves' target="_self">Monitor All Groves</a></li>
+             {% for i in vhosts_list %}
+                  <li><a href="https://farmmachine.cloudapp.net:{{ port_list[loop.index0] }}" target="_blank" >{{i}}</a></li>
+             {% endfor %}
+        </ul>
+            
+            
+        </ul>
+    </div>
+</div>
+</body>	
+
