@@ -10,19 +10,18 @@ from mongodb.collection_functions import Mongodb_DataBase
 
 class Capped_Collections:
 
-   def __init__(self, mongodb_db, mongodb_col, db_name,    max_number , size):
-       self.db_name     = db_name
-       self.size        = size
-       self.max_number  = max_number
+   def __init__(self, mongodb_db, mongodb_col, db_name):
+       self.db_name     = db_name 
        mongodb_db.create_database(db_name)  
        self.mongodb_db  = mongodb_db
        self.mongodb_col = mongodb_col
 
-   def create( self, collection_name ):
+   def create( self, collection_name, max_number,collection_size ):
        if self.mongodb_col.collection_exits( self.db_name, collection_name  ) == False:
-           self.mongodb_col.create_collection( self.db_name, collection_name, capped=True, max_number= self.max_number, collection_size = self.size )
+           self.mongodb_col.create_collection( self.db_name, collection_name, capped=True ,collection_size=collection_size, max_number= max_number )
        else:
-           print collection_name + "  Queue not created"
+           pass
+           #print collection_name + "  Queue not created"
 
 
    def get_tail_documents( self, collection_name,number):
@@ -44,10 +43,10 @@ if __name__ == "__main__":
    mongodb_db      = Mongodb_DataBase( client )
    mongodb_col     = Mongodb_Collection( client)
    mongodb_db.remove_all_databases()
-   cc              = Capped_Collections( mongodb_db, mongodb_col, "test", 5, 1024 )
-   cc.create("test_1")
-   cc.create("test_2")
-   cc.create("test_1")
+   cc              = Capped_Collections( mongodb_db, mongodb_col, "test" )
+   cc.create("test_1", 5, 1024)
+   cc.create("test_2", 5, 1024)
+   cc.create("test_1", 5, 1024)
    print cc.number("test_1")
    print "tail documents",cc.get_tail_documents("test_1",5)
    cc.insert( "test_1", {"a":1} )
