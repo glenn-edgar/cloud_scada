@@ -5,49 +5,51 @@ class Build_Configuration():
    def __init__( self):
       self.graph = Graph()
       self.graph.delete_all()
-      self.workspace_name = ["Start"]
-      self.workspace      = []
+      self.namespace     = ["Start"]
+      self.parent_node   = []
+      
 
    def check_duplicates(self, label, name ):
        #print "label",label,name
        if self.graph.find_one(label ,property_key="name",property_value=name) != None:
             raise ValueError( "Duplicate Node",label,name )
 
-   def get_workspace_name( self,name ):
-       temp = copy.deepcopy(self.workspace_name) 
+   def get_namespace( self,name ):
+       print self.namespace,name
+       temp = copy.deepcopy(self.namespace) 
        temp.append(name)
        return_value = "/".join(temp )
        return return_value
 
-   def get_workspace_node(self):
-       return self.workspace[-1]       
+   def get_parent_node(self):
+       return self.parent_node[-1]       
 
-   def pop_workspace( self ):
-       del self.workspace_name[-1]
-       del self.workspace[-1]         
+   def pop_namespace( self ):
+       del self.namespace[-1]
+       del self.parent_node[-1]     
 
 
-   # concept of workspace name is a string which ensures unique name
+   # concept of namespace name is a string which ensures unique name
    # the name is essentially the directory structure of the tree
-   def construct_node(self, push_workspace,relationship, label, name, properties ):
-       workspace_name = self.get_workspace_name(name)
+   def construct_node(self, push_namespace,relationship, label, name, properties ):
+       namespace = self.get_namespace(name)
        
-       self.check_duplicates( label, name=workspace_name)
+       self.check_duplicates( label, name=namespace)
        
        node = Node(label)
-       node.properties["workspace_name"]=workspace_name
+       node.properties["namespace"]=namespace
        node.properties["name"] = name
        for i in properties.keys():
           node.properties[i]=properties[i]
        self.graph.create(node)
-       if len(self.workspace) !=0:
-           relation_enity = Relationship( self.get_workspace_node(),relationship,node) 
+       if len(self.parent_node) !=0:
+           relation_enity = Relationship( self.get_parent_node(),relationship,node) 
            
            self.graph.create( relation_enity )
 
-       if push_workspace == True:
-          self.workspace_name.append(name)
-          self.workspace.append(node)
+       if push_namespace == True:
+          self.namespace.append(name)
+          self.parent_node.append(node)
        
 
 
@@ -101,10 +103,10 @@ class Query_Configuration():
           graph_object.properties[i] = new_properties[i]
        graph_object.push()
 
-   # concept of workspace name is a string which ensures unique name
+   # concept of namespace name is a string which ensures unique name
    # the name is essentially the directory structure of the tree
-   def construct_merge_node(self, push_workspace,relationship, label, name, new_properties ):
-       workspace_name = self.get_workspace_name(name)
+   def construct_merge_node(self, push_namespace,relationship, label, name, new_properties ):
+       namespace = self.get_namespace(name)
        node = self.graph.find_one(label ,property_key="name",property_value=name) 
        if self.graph.find_one(label ,property_key="name",property_value=name) != None:
            for i in properties.keys():
@@ -113,17 +115,17 @@ class Query_Configuration():
            return node
        else:
            node = Node(label)
-           node.properties["workspace_name"]=workspace_name
+           node.properties["namespace"]=namespace
            node.properties["name"] = name
            for i in properties.keys():
                node.properties[i]=properties[i]
            self.graph.create(node)
-           if len(self.workspace) !=0:
-               relation_enity = Relationship( self.get_workspace_node(),relationship,node) 
+           if len(self.namespace) !=0:
+               relation_enity = Relationship( self.get_namespace_node(),relationship,node) 
            self.graph.create( relation_enity )
-           if push_workspace == True:
-               self.workspace_name.append(name)
-               self.workspace.append(node)
+           if push_namespace == True:
+               self.namespace.append(name)
+               self.namespace.append(node)
            return node
 
 
