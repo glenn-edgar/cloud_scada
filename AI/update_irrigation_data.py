@@ -1,5 +1,6 @@
 import json
 import redis
+import math
 from neo4j_graph.graph_functions         import Query_Configuration
 from rabbit.rabbitmq_client              import RabbitMq_Client
 from rabbit.client_commands              import Status_Alert_Cmds        
@@ -8,7 +9,7 @@ from mongodb.collection_functions import Mongodb_Collection
 from mongodb.collection_functions import Mongodb_DataBase
 from pymongo import MongoClient
 from mongodb_capped_collections import Capped_Collections
-
+from scipy import stats
 
 
 class Update_Irrigation_Data():
@@ -98,40 +99,88 @@ class Update_Irrigation_Data():
                current_data = data[1][0]["data"]
                return_value.append( current_data)           
        node.properties["value"] = return_value[-1]
-       print "node",node.properties
-       node.push()
-       return return_value
-  
-   def transform_flow_data( self, conversion_factor, data ):
-       print "conversion_factor",conversion_factor
-       print "data",data
-       quit()
-
-   def update_schedules_flow(self, vhost,node, key, conversion_factor, number ):
-       station_control = rc.get_station_control(  vhost)
-       index_list = range(0,number)
-       index_list.reverse()
-       return_value = []
-       cc.create( key, self.cc_max_number,self.cc_db_size )
-       if len( index_list ) :
-           for i in index_list:
-               data = station_control.redis_lindex([{"key":key, "index":i } ])
-               flow_data_data = data[1][0]["data"]
-               #cc.insert( key, {"current_data":current_data } )
-               return_value.append( current_data)
-       else:
-               print key
-               data = station_control.redis_lindex([{"key":key, "index":0 } ])
-               print data
-               flow_data = data[1][0]["data"]
-               self.transform_flow_data( conversion_factor, flow_data)
-               return_value.append( current_data)           
-
-       node.properties["value"] = return_value[-1]
        
        node.push()
        return return_value
+  
+  
 
+
+   def get_flow_data(self, vhost, key, number ):
+       station_control = rc.get_station_control(  vhost)
+       data = station_control.redis_llen([key])
+       queue_depth = data[1][0]["data"]
+       if number > queue_depth:
+           number = queue_depth
+       index_list = range(0,number)
+       index_list.reverse()
+       return_value = {}
+      
+       if len( index_list ) :
+           for i in index_list:
+               data = station_control.redis_lindex([{"key":key, "index":i } ])
+               flow_data_json = data[1][0]["data"]
+               flow_data      = json.loads( flow_data_json )
+               time           = flow_data["time"]
+               flow_data      = flow_data["fields"]
+               for j in flow_data:
+                   if return_value.has_key( j ) == False:
+                      return_value[j] = []
+                   flow_data[j]["time_stamp"] = time
+                   return_value[j].append( flow_data[j] )           
+       else:
+               
+               data = station_control.redis_lindex([{"key":key, "index":0 } ])
+            
+               flow_data_json = data[1][0]["data"]
+               flow_data      = json.loads( flow_data_json )
+               time           = flow_data["time"]
+               flow_data      = flow_data["fields"]
+               for i in flow_data:
+                   if return_value.has_key( i ) == False:
+                      return_value[i] = []
+                   flow_data[i]["time_stamp"] = time
+                   return_value[i].append( flow_data[i] )  
+       
+        
+       return return_value
+
+   def scale_sensor_data( self, conversion_factor, sensor_data ):
+       for i in sensor_data:
+           i["max"]      = float(i["max"])*conversion_factor
+           i["std"]      = float(i["std"])*conversion_factor
+           i["average"]  = float(i["average"])*conversion_factor
+           i["total"]    = float(i["total"])*conversion_factor
+           avg = i["average"]
+           for j in range(0,len(i["data"])):
+               i["data"][j] = float(i["data"][j])*conversion_factor
+           del i["min"]
+           std = 0
+           if len(i["data"]) > 6:
+               for j in range( 5, len(i["data"])):
+                   std = std + ( i["data"][j] - avg)*(i["data"][j]-avg)
+               std = math.sqrt( std/(len(i["data"])-5))
+           i["std"] = std
+           if len(i["data"] ) > 12:
+              slope, intercept, r_value, p_value, std_err = stats.linregress(range( 5, len(i["data"])),i["data"][5:])
+              i["slope_active"]  = True
+              i["slope"]         = slope
+              i["intercept"]     = intercept
+              i["r_value"]       = r_value
+              i["p_value"]       = p_value
+              i["std_err"]       = std_err
+           else:
+              i["slope_active"]  = False
+              i["slope"]         = 0
+              i["intercept"]     = 0
+              i["r_value"]       = 0
+              i["p_value"]       = 0
+              i["std_err"]       = 0
+              
+           
+           
+       return sensor_data
+     
 
    def update_irrigation_data( self , number):
        controller_list = qc.match_labels("CONTROLLER")
@@ -153,19 +202,30 @@ class Update_Irrigation_Data():
                    current_limit  =     qc.match_relation_property( "STEP","namespace", k.properties["namespace"],"COIL_CURRENT_LIMIT" )
 
                    
-                   self.update_schedules_current( i.properties["vhost"],current[0], "log_data:coil:"+schedule_name+":"+step_name, number ) #current
+                   self.update_schedules_current( i.properties["vhost"], current[0], "log_data:coil:"+schedule_name+":"+step_name, number ) #current
                    
                    index = int( step_name ) -1
                    current_limit[0].properties["limit_avg"] = coil_limit_values[index]["limit_avg"]
                    current_limit[0].properties["limit_std"] = coil_limit_values[index]["limit_std"]
                    current_limit[0].push()
 
-                   flow_data = self.get_flow_data( i.properties["vhost"], "log_data:flow:"+schedule_name+":"+step_name)
-                   flow_data = self.transform_flow_data( conversion_factors, flow_data)
-                   for l in flow:
-                       name = l.properties["name"]
+                   flow_data = self.get_flow_data( i.properties["vhost"], "log_data:flow:"+schedule_name+":"+step_name,number)
+                   for l in flow:  #nodes of flow values
+                       sensor_name = l.properties["name"]
+                       l.properties["mongodb_collection"] = "log_data:flow:"+schedule_name+":"+step_name+":"+sensor_name
+                       conversion_factor = conversion_factors[ sensor_name ]
+                       sensor_data = flow_data[sensor_name]
+                       sensor_data = self.scale_sensor_data( conversion_factor, sensor_data )
+                       l.properties["value"] = json.dumps(sensor_data[-1])
+                       l.properties["time_stamp"]  = sensor_data[-1]["time_stamp"]
+                       l.push()
+                       if number > 0 :
+                          cc.create( l.properties["mongodb_collection"], self.cc_max_number,self.cc_db_size )
+                          cc.insert( l.properties["mongodb_collection"], sensor_data )
+                       
+                       
                       
-                       self.update_schedules_flow( i.properties["vhost"],l,   cf , number )
+                      
 
                    
                    

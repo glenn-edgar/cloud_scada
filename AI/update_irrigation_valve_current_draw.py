@@ -40,12 +40,14 @@ class Update_Irrigation_Valve_Current_Draw():
            for i in index_list:
                data = station_control.redis_lindex([{"key":key, "index":i } ])
                current_data = data[1][0]["data"]
+              
                cc.insert( key, {"current_data":current_data } )
                return_value.append( current_data)
        else:
                data = station_control.redis_lindex([{"key":key, "index":0 } ])
                current_data = data[1][0]["data"]
                return_value.append( current_data)           
+
        return return_value
 
    def get_coil_value_function_2( self, station_control, key, number= None):
@@ -76,7 +78,8 @@ class Update_Irrigation_Valve_Current_Draw():
                i.properties["mongodb_collection"] = None
           
            
-          
+           
+           
            i.push()
         
    
