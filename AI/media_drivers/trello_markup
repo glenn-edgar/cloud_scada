@@ -1,0 +1,40 @@
+''''
+Bold text - Mark text in double asterisks, like **this**, to make it bold.
+
+Italic text - Mark text in single asterisks, like *this*, to make it italic. You can also use underscores to achieve the same, for example: _this_
+
+Bullet point (unordered) list - Prefacing a line of text with a hyphen for each line will create an unordered list. For example:
+
+- Item 1
+- Item 2
+- Item 3
+Numbered list - Prefacing a line of text with a number and period at each line will create an ordered list. For example:
+
+1. Item 1
+2. Item 2
+3. Item 3
+NOTE: Any line that begins with this format, even if the number isn't 1, will automatically create an ordered list. This is as expected and per markdown specs. You can preserve your formatting by putting a '\' before the period, e.g.  28\. March.
+
+Links - Create a link by putting the link text in brackets and the URL in parentheses, like [this](http://www.trello.com).
+
+Embedded images - Embed an image by putting the link text in brackets and the image URL or path in parentheses, prefaced with an exclamation mark, like: ![Alt text](/path/to/img.jpg). This works in card descriptions, but will not embed an image in a comment.
+
+Code block - Include formatted code by wrapping it in three backticks (```) at the beginning and end of the block, or by starting a line with four spaces. Note that the triple backticks have to be on a separate line and ensure you have a blank line before and after the code block.
+
+Inline code - Include inline formatted code by wrapping it in a single backtick (`) at the beginning and end of the code.
+
+Strikethrough text - Cross out text by wrapping it in two tildes on each side, like ~~this~~.
+
+Indent text / Block Quotes - Indent text by including a “>” in front of each line of the text that you’d like to indent or quote.
+
+Headers - Headers can be marked in several ways. Text in #Single Hashes# will be interpreted like an `<h1>` HTML tag (a big header). Text in ##Double Hashes## will be interpreted like an `<h2>` HTML tag (a smaller header). In headers, a line of hyphens below text will also be interpreted as an `<h2>` tag. Headers can’t be included in comments.
+
+Horizontal line - Including a line of hyphens, like ------- , on its own line in a comment will create a horizontal line in the comment. In card descriptions, include an extra line break after any text before the line of hyphens to prevent the hyphens from being interpreted as header syntax.
+
+
+Please note that we have disabled some Markdown features in areas where it does not make sense. For example, it is not possible to insert headers into checklist items.
+
+This is all the Markdown syntax that's available in Trello, but if you'd like to learn more about Markdown in general, you can see the complete syntax at  Daring Fireball.
+
+''''
+
