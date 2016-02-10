@@ -13,9 +13,6 @@ from trello import Lists
 from trello import Notifications
 from trello import Organizations
 
-redis_startup = redis.StrictRedis( host = "127.0.0.1", port=6379, db = 1 )
-trello_json = redis_startup.hget("MEDIA_DRIVERS","TRELLO")
-trello_dict   = json.loads( trello_json )
 
 class Trello_Api:
 
@@ -191,6 +188,12 @@ class Trello_Api:
 
  
 if __name__ == "__main__":
+
+
+   redis_startup = redis.StrictRedis( host = "127.0.0.1", port=6379, db = 1 )
+   trello_json = redis_startup.hget("MEDIA_DRIVERS","TRELLO")
+   trello_dict   = json.loads( trello_json )
+
    key             = trello_dict["key"]
    token           = trello_dict["token"]
    user_name       = trello_dict["user_name"]
