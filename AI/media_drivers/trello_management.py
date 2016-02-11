@@ -49,6 +49,12 @@ class Trello_Management:
        if self.check_element( self.board_element,"name", board_name ) == False:
           board_element = self.trello_api.create_board( org_element, board_name,"")
           self.board_element = board_element
+          self.list_element = None
+          self.card_element = None
+          #print "new board fetched"
+       else:
+          pass
+          #print "old board fetched"
        return self.board_element
        
    def format_board( self, board_element, functions ):
@@ -63,9 +69,15 @@ class Trello_Management:
 
    def find_list( self, organization_name,board_name, list_name ):
        board_element = self.find_board( organization_name, board_name )
+
        if self.check_element( self.list_element,"name",list_name ) == False:
           list_element = self.trello_api.create_list( board_element , list_name, "" )
           self.list_element = list_element
+          self.card_element = None
+          #print "new list fetched"
+       else:
+          pass
+          #print "old list fetched"
        return self.list_element
 
   
@@ -74,10 +86,13 @@ class Trello_Management:
        list_element  = self.find_list( organization_name, board_name, list_name)
        if self.check_element( self.card_element, "name",card_name ) == False:
            card_element  = self.trello_api.create_card( list_element, card_name,"" )
+           self.card_element = card_element
+           #print "new card fetched"
        else:
-            pass
-       self.card_element = card_element
-       return card_element
+           pass
+           #print "old card fetched"
+       
+       return self.card_element
 
    
       
@@ -108,11 +123,23 @@ if __name__ == "__main__":
    trello_mgt.format_board( board_element,["Check for Sprinkler Wire Breakage","Check for Selenoid Shorts" ]  )
    list_element = trello_mgt.find_list("LaCima","Electrical Functions","LaCima Irrigation Controller" )
    card_element = trello_mgt.find_card("LaCima","Electrical Functions","LaCima Irrigation Controller","Schedule: fruit trees low water")
-   print "card element",card_element
+   
+   trello_mgt.trello_api.update_card_description( card_element,"Irrigation Resistance Check \nSchedule: **fruit trees low water**\n-----------------")
+   trello_mgt.add_card_comment( card_element,"Step 1:  xxx Pass\n**Step 2:  xxxx Fail** \n-----------------\nStep 3")
+   trello_mgt.set_card_label( card_element, "red")
+
+   board_element = trello_mgt.find_board("LaCima","Irrigation Functions" )
+   trello_mgt.format_board( board_element,["Check for Sprinkler Wire Breakage","Check for Selenoid Shorts" ]  )
+   list_element = trello_mgt.find_list("LaCima","Irrigation Functions","LaCima Irrigation Controller" )
+   card_element = trello_mgt.find_card("LaCima","Irrigation Functions","LaCima Irrigation Controller","Schedule: fruit trees low water")
+   
    trello_mgt.trello_api.update_card_description( card_element,"Irrigation Resistance Check \nSchedule: **fruit trees low water**\n-----------------")
    trello_mgt.add_card_comment( card_element,"Step 1:  xxx Pass\n**Step 2:  xxxx Fail** \n-----------------\nStep 3")
    trello_mgt.set_card_label( card_element, "red")
  
    trello_mgt.trello_api.delete_board( org_element,"Electrical Functions")
+   #trello_mgt.trello_api.delete_organization("LaCima")
+ 
+   trello_mgt.trello_api.delete_board( org_element,"Irrigation Functions" )
    trello_mgt.trello_api.delete_organization("LaCima")
 
