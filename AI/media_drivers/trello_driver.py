@@ -107,6 +107,8 @@ class Trello_Api:
    def delete_organization( self, name ):
        self.organization_delete_helper( name, self.find_organizations(), self.org_api.delete )
 
+   def update_org_description( self, org_element, description ):
+       self.org_api.update_desc( org_element["id"],description)
    
    #
    #
@@ -118,15 +120,23 @@ class Trello_Api:
       return self.list_to_dictionary( "name", self.org_api.get_board( organization["id"] ) , self.board_api.update_closed )
 
    def create_board( self, organization, name, description ):
-       board = self.creation_helper_parameter( name, description, organization, self.find_boards( organization ), self.board_api.new )    
-       lists = self.board_api.get_list(board["id"])
-       if self.find_boards(organization).has_key( name) == False:
+       temp = self.find_boards( organization )
+       if temp.has_key(name) == False:
+           board = self.creation_helper_parameter( name, description, organization, self.find_boards( organization ), self.board_api.new )    
+           lists = self.board_api.get_list(board["id"])
            for i in lists:
                self.list_api.update_closed(i["id"],"true")
+       else:
+           board = temp[name]
+
        return board
 
    def delete_board( self, organization, name ):
        self.delete_helper( name, self.find_boards( organization ), self.board_api.update_closed )
+
+ 
+   def update_board_description( self, board_element, description ):
+       self.board_api.update_desc( board_element["id"],description)
 
 
    def find_lists( self, board ):
@@ -158,29 +168,29 @@ class Trello_Api:
    def delete_card( self, list_element, name ):
        self.delete_helper( name, self.find_cards( list_element ), self.card_api.delete,False )
 
-   def update_description( self, card_element,text):
+   def update_card_description( self, card_element,text):
        self.card_api.update_desc( card_element["id"], text )
 
 
-   def remove_label( card_element,value ):
+   def remove_card_label( card_element,value ):
        try:
           self.card_api.delete_label_color( value,card_element["id"] )
        except:
           pass
 
-   def add_label( self, card_element, color ):
+   def add_card_label( self, card_element, color ):
       try:
           self.card_api.new_label( card_element["id"] , color )
       except:
           pass 
 
-   def delete_label( self, card_element, color):
+   def delete_card_label( self, card_element, color):
       try:
           self.card_api.delete_label_color( color, card_element["id"]  )
       except:
           pass
 
-   def add_comment(self, card_element, text ):
+   def add_card_comment(self, card_element, text ):
        self.card_api.new_action_comment( card_element["id"], text)
       
  
@@ -207,11 +217,11 @@ if __name__ == "__main__":
    
    card_element = trello_api.create_card( list_element,"test card","test card descriptions ")
    print "card_element",card_element
-   trello_api.update_description( card_element,"new description ")
-   trello_api.add_comment( card_element, "This is a new comment")
-   trello_api.add_label( card_element,"blue")
-   trello_api.add_label( card_element,"black")
-   trello_api.delete_label( card_element,"red")
+   trello_api.update_card_description( card_element,"new description ")
+   trello_api.add_card_comment( card_element, "This is a new comment")
+   trello_api.add_card_label( card_element,"blue")
+   trello_api.add_card_label( card_element,"black")
+   trello_api.delete_card_label( card_element,"red")
    
    trello_api.delete_card(list_element,"test card" )  
    trello_api.delete_board( organization, "test board")
