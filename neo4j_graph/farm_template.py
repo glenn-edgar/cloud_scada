@@ -40,12 +40,32 @@ class Construct_Farm():
                                     name="SYSTEM_EVENT_QUEUE",
                                     properties = {} )
 
+
+   def add_diagnostic_card_header( self, *args):
+       self.bc.construct_node(  push_namespace=True,
+                                    relationship="DIAGNOSTIC_CARD_HEADER", 
+                                    label="DIAGNOSTIC_CARD_HEADER", 
+                                    name="DIAGNOSTIC_CARD_HEADER",
+                                    properties = { "organization": "lacimaoperations" } )
+
+   def end_diagnostic_card_header( self, *args):
+       self.bc.pop_namespace()  
+
+   def add_diagnostic_card( self, name, board, list_group ):
+       self.bc.construct_node(  push_namespace=False,
+                                relationship="DIAGNOSTIC_CARD", 
+                                label="DIAGNOSTIC_CARD", 
+                                name = name,
+                                 properties = { "board":board, "list_group":list_group } )
+
    def add_schedule_header( self ):
        return self.bc.construct_node(  push_namespace=True,relationship="Schedule_Header", label="Schedule_Header", name="Schedule_Header", 
                properties ={})
 
    def end_schedule_header( self ):
        self.bc.pop_namespace()   
+
+
 
 
    def add_schedule( self,name,number,flow_sensor_names):
