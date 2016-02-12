@@ -16,11 +16,12 @@ class Update_Irrigation_Data():
 #"log_data:flow_limits:"+schedule_name+":"+sensor_name
 #"log_data:coil_limits:"+schedule
 
-   def __init__( self, rabbitmq_remote_connections,query_configuration ):
+   def __init__( self, rabbitmq_remote_connections,query_configuration ,capped_collection):
        self.rc = rabbitmq_remote_connections
        self.qc = query_configuration
        self.cc_max_number   = 512
        self.cc_db_size      = 5000000
+       self.cc              = capped_collection
 
                 
 
@@ -30,13 +31,13 @@ class Update_Irrigation_Data():
 
    def get_coil_limits( self,vhost,redis_key ):
        
-       station_control = rc.get_station_control(  vhost)
+       station_control = self.rc.get_station_control(  vhost)
        result =  station_control.redis_get([redis_key] )
        data =  result[1][0]["data"]
        return json.loads(data)
 
    def get_flow_limits( self,vhost,redis_key ):
-       station_control = rc.get_station_control(  vhost)
+       station_control = self.rc.get_station_control(  vhost)
        key_list = redis_key+":*"
        result = station_control.redis_keys([{"key":key_list}])
        flow_meter_keys = result[1][0]
@@ -50,7 +51,7 @@ class Update_Irrigation_Data():
        return return_value
 
    def get_conversion_factors( self, vhost, controller_node ):
-       flow_meters = qc.match_relation_property( "CONTROLLER","namespace",controller_node.properties["namespace"],"FLOW_SENSOR")
+       flow_meters = self.qc.match_relation_property( "CONTROLLER","namespace",controller_node.properties["namespace"],"FLOW_SENSOR")
        return_value = {}
        for i in flow_meters:
           
@@ -61,7 +62,7 @@ class Update_Irrigation_Data():
 
    def update_schedules_flow( self, vhost ,node, key,  flow_limits,conversion_factors ): 
       
-       station_control = rc.get_station_control(  vhost)
+       station_control = self.rc.get_station_control(  vhost)
        data = station_control.redis_lindex([{"key":key, "index":0 } ])
        flow_data_json = data[1][0]["data"]
        flow_data      = json.loads( flow_data_json )
@@ -83,16 +84,16 @@ class Update_Irrigation_Data():
 
    
    def update_schedules_current(self, vhost,node, key, number ):
-       station_control = rc.get_station_control(  vhost)
+       station_control = self.rc.get_station_control(  vhost)
        index_list = range(0,number)
        index_list.reverse()
        return_value = []
-       cc.create( key, self.cc_max_number,self.cc_db_size )
+       self.cc.create( key, self.cc_max_number,self.cc_db_size )
        if len( index_list ) :
            for i in index_list:
                data = station_control.redis_lindex([{"key":key, "index":i } ])
                current_data = data[1][0]["data"]
-               cc.insert( key, {"current_data":current_data } )
+               self.cc.insert( key, {"current_data":current_data } )
                return_value.append( current_data)
        else:
                data = station_control.redis_lindex([{"key":key, "index":0 } ])
@@ -107,7 +108,7 @@ class Update_Irrigation_Data():
 
 
    def get_flow_data(self, vhost, key, number ):
-       station_control = rc.get_station_control(  vhost)
+       station_control = self.rc.get_station_control(  vhost)
        data = station_control.redis_llen([key])
        queue_depth = data[1][0]["data"]
        if number > queue_depth:
@@ -183,23 +184,23 @@ class Update_Irrigation_Data():
      
 
    def update_irrigation_data( self , number):
-       controller_list = qc.match_labels("CONTROLLER")
+       controller_list = self.qc.match_labels("CONTROLLER")
        for i in controller_list:
            vhost = i.properties["vhost"]
            conversion_factors = self.get_conversion_factors(vhost,i )
            
-           schedule_list = qc.match_relation_property( "CONTROLLER","namespace",i.properties["namespace"],"IRRIGATION_SCHEDULE")
+           schedule_list = self.qc.match_relation_property( "CONTROLLER","namespace",i.properties["namespace"],"IRRIGATION_SCHEDULE")
      
            for j in schedule_list:
                schedule_name        = j.properties["name"]
                coil_limit_values    =  self.get_coil_limits( vhost,"log_data:coil_limits:"+schedule_name )
                flow_limit_values    =  self.get_flow_limits( vhost,"log_data:flow_limits:"+schedule_name )
-               steps                = qc.match_relation_property( "IRRIGATION_SCHEDULE","namespace", j.properties["namespace"],"STEP" )
+               steps                = self.qc.match_relation_property( "IRRIGATION_SCHEDULE","namespace", j.properties["namespace"],"STEP" )
                for k in steps:
                    step_name      =     k.properties["name"]
-                   flow           =     qc.match_relation_property( "STEP","namespace", k.properties["namespace"],"FLOW_SENSOR_VALUE" ) 
-                   current        =     qc.match_relation_property( "STEP","namespace", k.properties["namespace"],"COIL_CURRENT" )
-                   current_limit  =     qc.match_relation_property( "STEP","namespace", k.properties["namespace"],"COIL_CURRENT_LIMIT" )
+                   flow           =     self.qc.match_relation_property( "STEP","namespace", k.properties["namespace"],"FLOW_SENSOR_VALUE" ) 
+                   current        =     self.qc.match_relation_property( "STEP","namespace", k.properties["namespace"],"COIL_CURRENT" )
+                   current_limit  =     self.qc.match_relation_property( "STEP","namespace", k.properties["namespace"],"COIL_CURRENT_LIMIT" )
 
                    
                    self.update_schedules_current( i.properties["vhost"], current[0], "log_data:coil:"+schedule_name+":"+step_name, number ) #current
@@ -220,8 +221,8 @@ class Update_Irrigation_Data():
                        l.properties["time_stamp"]  = sensor_data[-1]["time_stamp"]
                        l.push()
                        if number > 0 :
-                          cc.create( l.properties["mongodb_collection"], self.cc_max_number,self.cc_db_size )
-                          cc.insert( l.properties["mongodb_collection"], sensor_data )
+                          self.cc.create( l.properties["mongodb_collection"], self.cc_max_number,self.cc_db_size )
+                          self.cc.insert( l.properties["mongodb_collection"], sensor_data )
                        
                        
                       
@@ -230,7 +231,7 @@ class Update_Irrigation_Data():
                    
                    
 
-                   flow_limits        = qc.match_relation_property( "STEP","namespace", k.properties["namespace"],"FLOW_SENSOR_LIMIT" )  
+                   flow_limits        = self.qc.match_relation_property( "STEP","namespace", k.properties["namespace"],"FLOW_SENSOR_LIMIT" )  
                    for l in flow_limits:
                        name = l.properties["name"]
                        l.properties["limit_avg"] = float(flow_limit_values[name][index]["limit_avg"])*conversion_factors[name]
@@ -247,6 +248,6 @@ if __name__ == "__main__":
    rc          = Rabbitmq_Remote_Connections()
    qc          = Query_Configuration()
    cc          = Capped_Collections( mongodb_db, mongodb_col, db_name = "Capped_Colections" ) 
-   idd         = Update_Irrigation_Data(rc,qc)
+   idd         = Update_Irrigation_Data(rc,qc,cc)
    idd.update_irrigation_data(0)
                 
