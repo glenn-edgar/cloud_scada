@@ -78,6 +78,8 @@ class Query_Configuration():
        return return_value
        
 
+   
+
    def match_relationship( self, relationship ):
        query_string = "MATCH n-[:"+relationship+"]->m   RETURN m"  
        #print "---------query string ---------------->"+query_string
@@ -128,7 +130,14 @@ class Query_Configuration():
                self.namespace.append(node)
            return node
 
-
+   def match_relation_property_specific( self,label_name, property_name, property_value, label,return_name,return_value ):
+       query_string = "MATCH (n:"+label_name+'   { '+property_name +':"'+property_value+'"})-[*]->(o:'+label+') Where o.'+return_name+' = "'+return_value +'" RETURN o'
+       #print "query string ",query_string  
+       results =  self.graph.cypher.execute(query_string)
+       return_value = []
+       for i in results:
+           return_value.append(i[0])
+       return return_value
 
    def match_relation_property( self, label_name, property_name, property_value, label ):
        query_string = "MATCH (n:"+label_name+'   { '+property_name +':"'+property_value+'"})-[*]->(o:'+label+')   RETURN o'  

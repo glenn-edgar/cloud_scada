@@ -1,4 +1,4 @@
-
+import json
 from graph_functions import Build_Configuration
 
 class Construct_Farm():
@@ -46,17 +46,19 @@ class Construct_Farm():
                                     relationship="DIAGNOSTIC_CARD_HEADER", 
                                     label="DIAGNOSTIC_CARD_HEADER", 
                                     name="DIAGNOSTIC_CARD_HEADER",
-                                    properties = { "organization": "lacimaoperations" } )
+                                    properties = {} )
 
    def end_diagnostic_card_header( self, *args):
        self.bc.pop_namespace()  
 
-   def add_diagnostic_card( self, name, board, list_group ):
+   def add_diagnostic_card( self, org_name, board_name, list_name, card_name,description=None ):
+       if description == None:
+           description = card_name
        self.bc.construct_node(  push_namespace=False,
                                 relationship="DIAGNOSTIC_CARD", 
                                 label="DIAGNOSTIC_CARD", 
-                                name = name,
-                                 properties = { "board":board, "list_group":list_group } )
+                                name = card_name,
+                                 properties = { "org_name":org_name, "board_name":board_name, "list_name":list_name, "description":description,"label":"green","new_commit":[]  } )
 
    def add_schedule_header( self ):
        return self.bc.construct_node(  push_namespace=True,relationship="Schedule_Header", label="Schedule_Header", name="Schedule_Header", 
@@ -123,9 +125,10 @@ class Construct_Farm():
                properties ={"name":name,"protocol":protocol,"baud_rate":baud_rate })
 
 
-   def add_remote( self, name,modbus_address,irrigation_station_number):
+   def add_remote( self, name,modbus_address,irrigation_station_number, card_dict):
+       card_dict_json = json.dumps(card_dict)
        self.bc.construct_node(  push_namespace=True,relationship="REMOTE", label="REMOTE", name=name, 
-               properties ={"name":name,"modbus_address":modbus_address,"irrigation_station_number":irrigation_station_number })
+               properties ={"name":name,"modbus_address":modbus_address,"irrigation_station_number":irrigation_station_number, "card_dict":card_dict_json })
        self.bc.construct_node(  push_namespace=True,relationship="IRRIGATION_VALVE_CURRENT_HEADER", label="IRRIGATION_VALVE_CURRENT_HEADER", name = "valve_current_header", 
            properties ={ })           
        for i in range(0,irrigation_station_number):
