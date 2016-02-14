@@ -25,11 +25,15 @@ class Transfer_Data:
            
            self.tm.add_card_description(card, pr["description"] )
            self.tm.set_card_label( card, pr["label"] )
+           
            try:
                new_commit = json.loads(pr["new_commit"])
-               if len( pr["new_commit"] ) != 0:
-                   for j in pr["new_commit"] :
+               print new_commit
+               if type(new_commit) is list:
+                   for j in new_commit :
                        self.tm.add_card_comment( card, j )
+               else:
+                  pass
            except:
                pass
            i.properties["new_commit"] = json.dumps([])

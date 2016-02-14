@@ -27,8 +27,8 @@ if __name__ == "__main__":
    aid         = Analyize_Valve_Current_Data( qc )
 
 
-   #cd.update_coil_current(0)
+   cd.update_coil_current(0)
 
-   #idd.update_irrigation_data(0)
+   idd.update_irrigation_data(0)
  
    aid.analyize_data()

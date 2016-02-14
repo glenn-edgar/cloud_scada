@@ -128,8 +128,17 @@ class Analyize_Valve_Current_Data:
                            else:
                                text = text +"Step: "+str(k)+"  Value: "+str(value)+ "  Limit: "+str(limit)+"  OK\n"
                             
+               try:
+                  temp = json.loads( open_card.properties["new_commit"] )
+                  if type(temp) is not list:
+                      temp = []
+               except:
+                  temp = []
 
-               open_card.properties["new_commit"].append(text)
+               temp.append( text)
+               open_card.properties["new_commit"] = json.dumps(temp)
+
+
                if error_flag == True:
                   open_card.properties["label"] = "red"
                else:
@@ -151,15 +160,16 @@ class Analyize_Valve_Current_Data:
                
                try:             
                  temp = json.loads(short_card.properties["new_commit"])
-                 length = len(temp) 
+                 if type(temp) is not list:
+                      temp = []
+
                except:
                  temp = []
                
-               short_card.properties["new_commit"] = json.dumps(temp.append(text))
-               if error_flag == True:
-                  short_card.properties["label"] = "red"
-               else:
-                  short_card.properties["label"] = "green"
+ 
+                
+               temp.append( text)
+               short_card.properties["new_commit"] = json.dumps(temp)
                short_card.push()      
                
 
