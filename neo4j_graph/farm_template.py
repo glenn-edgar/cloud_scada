@@ -19,9 +19,11 @@ class Construct_Farm():
    def end_site( self ):
       self.bc.pop_namespace()
 
-   def construct_controller( self,name,web_queue,rpc_queue,local_ip,controller_type,vhost):
+   def construct_controller( self,name,web_queue,rpc_queue,local_ip,controller_type,vhost,card_dict,redis_controller_key ):
+       card_dict_json = json.dumps( card_dict )
        self.bc.construct_node(  push_namespace=True,relationship="CONTROLLER", label="CONTROLLER", name=name, 
-               properties ={"web_queue":web_queue, "rpc_queue":rpc_queue,"local_ip":local_ip,"controller_type":controller_type,"vhost":vhost})
+               properties ={"web_queue":web_queue, "rpc_queue":rpc_queue,"local_ip":local_ip,"controller_type":controller_type,"vhost":vhost,"card_dict":card_dict_json, 
+                             "irrigation_resets":0,"system_resets":0, "ping_loss":0, "ping_counts":0,"temperature":0 ,"redis_key":redis_controller_key })
 
 
    def end_controller( self ):
@@ -111,9 +113,9 @@ class Construct_Farm():
 
    
 
-   def add_udp_io_sever(self, name, ip,remote_type, port ):
+   def add_udp_io_sever(self, name, ip,remote_type, port, redis_key ):
        return self.bc.construct_node(  push_namespace=True,relationship="UDP_IO_SERVER", label="UDP_IO_SERVER", name=name, 
-               properties ={"name":name,"ip":ip,"remote_type":remote_type,"port":port })
+               properties ={"name":name,"ip":ip,"remote_type":remote_type,"port":port,"redis_key":redis_key })
 
 
    def end_udp_io_server(self ):
@@ -128,7 +130,7 @@ class Construct_Farm():
    def add_remote( self, name,modbus_address,irrigation_station_number, card_dict):
        card_dict_json = json.dumps(card_dict)
        self.bc.construct_node(  push_namespace=True,relationship="REMOTE", label="REMOTE", name=name, 
-               properties ={"name":name,"modbus_address":modbus_address,"irrigation_station_number":irrigation_station_number, "card_dict":card_dict_json })
+               properties ={"name":name,"modbus_address":modbus_address,"irrigation_station_number":irrigation_station_number, "card_dict":card_dict_json})
        self.bc.construct_node(  push_namespace=True,relationship="IRRIGATION_VALVE_CURRENT_HEADER", label="IRRIGATION_VALVE_CURRENT_HEADER", name = "valve_current_header", 
            properties ={ })           
        for i in range(0,irrigation_station_number):
