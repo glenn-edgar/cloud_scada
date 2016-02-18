@@ -31,7 +31,12 @@ if __name__ == "__main__" :
    #
    #
    cf.construct_controller( "PI_1","rpc_queue","alert_status_queue","192.168.1.82","irrigation/1","LaCima",
-   {"temperature":"Main Controller Temperature","ping":"Main Controller Connectivity","irrigation_resets":"Main Controller Irrigation Resets","system_resets":"Main Controller System Resets" },
+   {"temperature":"Main Controller Temperature",
+    "ping":"Main Controller Connectivity",
+    "irrigation_resets":"Main Controller Irrigation Resets",
+    "system_resets":"Main Controller System Resets",
+    "clean_filter":"Main Controller Clean Filter",
+    "check_off":"Main Controller Check Off" },
     "CONTROLLER_STATUS")
    cf.add_event_queue()
    cf.add_system_event_queue()
@@ -43,6 +48,7 @@ if __name__ == "__main__" :
    cf.add_diagnostic_card(org_name,board_name,list_name,"Main Controller Connectivity" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"Main Controller Irrigation Resets" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"Main Controller System Resets" )
+
    cf.add_diagnostic_card(org_name,board_name,list_name,"Remote 1 Connectivity" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"Remote 2 Connectivity" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"Remote 3 Connectivity" )
@@ -54,13 +60,17 @@ if __name__ == "__main__" :
    cf.add_diagnostic_card(org_name,board_name,list_name,"Remote 2 Shorted Selenoid" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"Remote 3 Shorted Selenoid" )
    board_name  = "Irrigation Plumbing"
-   cf.add_diagnostic_card(org_name,board_name,list_name,"Clean Filter" )
-   cf.add_diagnostic_card(org_name,board_name,list_name,"Off Flow Rate" )
+   cf.add_diagnostic_card(org_name,board_name,list_name,"Main Controller Clean Filter" )
+   cf.add_diagnostic_card(org_name,board_name,list_name,"Main Controller Check Off"  )
    board_name = "Irrigation Schedules"
-   cf.add_diagnostic_card(org_name,board_name,list_name,"fruit_trees_low_water" )
-   cf.add_diagnostic_card(org_name,board_name,list_name,"house" )
-   cf.add_diagnostic_card(org_name,board_name,list_name,"flowers" )
-   cf.add_diagnostic_card(org_name,board_name,list_name,"clean-filter" )
+   for i in range(1,12):
+       cf.add_diagnostic_card(org_name,board_name,list_name,"fruit_trees_low_water:"+str(i) )
+   for i in range(1,6):
+       cf.add_diagnostic_card(org_name,board_name,list_name,"house:"+str(i) )
+   for i in range(1,15):
+       cf.add_diagnostic_card(org_name,board_name,list_name,"flowers:"+str(i) )
+   for i in range( 1,7):
+       cf.add_diagnostic_card(org_name,board_name,list_name,"clean-filter:"+str(i) )
    cf.end_diagnostic_card_header()
        
 
@@ -70,8 +80,8 @@ if __name__ == "__main__" :
 
    # need to automatically construct these files in the future
    cf.add_schedule_header()
-   cf.add_schedule( name='fruit_trees_low_water',number=11,flow_sensor_names = ['main_sensor'])
-   cf.add_schedule( name='flowers',number=14,flow_sensor_names = ['main_sensor'])
+   cf.add_schedule( name='fruit_trees_low_water',number=11,flow_sensor_names = ['main_sensor']  )
+   cf.add_schedule( name='flowers',number=14,flow_sensor_names = ['main_sensor'] )
    cf.add_schedule( name='clean-filter',number=6,flow_sensor_names = ['main_sensor'])
    cf.add_schedule( name='house',number=5,flow_sensor_names = ['main_sensor'])
    cf.end_schedule_header()

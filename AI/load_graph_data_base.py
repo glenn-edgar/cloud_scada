@@ -12,6 +12,8 @@ from mongodb_capped_collections           import Capped_Collections
 from update_irrigation_data               import Update_Irrigation_Data
 from update_irrigation_valve_current_draw import Update_Irrigation_Valve_Current_Draw
 from update_irrigation_valve_current_draw import Analyize_Valve_Current_Data
+from remote_statistics                    import Analyize_Controller_Parameters
+from remote_statistics                    import Analyize_Remote_Connectivity
 
 if __name__ == "__main__":
 
@@ -25,10 +27,12 @@ if __name__ == "__main__":
    idd         = Update_Irrigation_Data(rc,qc,cc) 
    cd          = Update_Irrigation_Valve_Current_Draw(rc,qc,cc)
    aid         = Analyize_Valve_Current_Data( qc )
+   ac         = Analyize_Controller_Parameters( rc, qc )
+   ar         = Analyize_Remote_Connectivity(rc, qc)
+   
 
-
-   cd.update_coil_current(0)
-
-   idd.update_irrigation_data(0)
- 
+   cd.update_coil_current(1)
+   idd.update_irrigation_data(1)
    aid.analyize_data()
+   ac.update_controller_properties() 
+   ar.analyize_data()
