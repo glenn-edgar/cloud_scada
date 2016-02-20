@@ -72,14 +72,13 @@ class Construct_Farm():
 
 
 
-   def add_schedule( self,name,number,flow_sensor_names):
+   def add_schedule( self,name,number,flow_sensor_names ,card_link ):
        schedule_node = self.bc.construct_node(  push_namespace=True,relationship="IRRIGATION_SCHEDULE", label="IRRIGATION_SCHEDULE", name=name, 
                        properties ={"number":number})
        for i in range(0,number):
-           self.bc.construct_node(  push_namespace=True,relationship="STEP", label="STEP", name=str(i+1), 
-                       properties ={"number":number})
+           self.bc.construct_node(  push_namespace=True,relationship="STEP", label="STEP", name=str(i+1),  properties ={ "card":card_link+str(i+1) } )
            self.bc.construct_node(  push_namespace=True,relationship="FLOW_SENSOR_HEADERS", label="FLOW_SENSOR_HEADERS", name="FLOW_SENSOR_HEADERS", 
-                       properties ={ })
+                       properties ={  })
            for j in flow_sensor_names:
                self.bc.construct_node( push_namespace = True,  relationship="FLOW_SENSOR_HEADER", label = "FLOW_SENSOR_HEADER", name = j, properties={} )
                self.bc.construct_node( push_namespace = False, relationship="FLOW_SENSOR_LIMIT", label = "FLOW_SENSOR_LIMIT", name = j, properties={} )
