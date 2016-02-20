@@ -80,10 +80,10 @@ if __name__ == "__main__" :
 
    # need to automatically construct these files in the future
    cf.add_schedule_header()
-   cf.add_schedule( name='fruit_trees_low_water',number=11,flow_sensor_names = ['main_sensor']  )
-   cf.add_schedule( name='flowers',number=14,flow_sensor_names = ['main_sensor'] )
-   cf.add_schedule( name='clean-filter',number=6,flow_sensor_names = ['main_sensor'])
-   cf.add_schedule( name='house',number=5,flow_sensor_names = ['main_sensor'])
+   cf.add_schedule( name='fruit_trees_low_water',number=11,flow_sensor_names = ['main_sensor'], card_link = "fruit_trees_low_water:" )
+   cf.add_schedule( name='flowers',number=14,flow_sensor_names = ['main_sensor'], card_link = "flowers:")
+   cf.add_schedule( name='clean-filter',number=6,flow_sensor_names = ['main_sensor'], card_link = "clean-filter:")
+   cf.add_schedule( name='house',number=5,flow_sensor_names = ['main_sensor'], card_link = "house:")
    cf.end_schedule_header()
 
    
