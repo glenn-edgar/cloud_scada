@@ -83,27 +83,29 @@ class Update_Irrigation_Data():
 
 
    
-   def update_schedules_current(self, vhost,node, key, number ):
+   #************************* integrate this *****************
+   def update_schedules_current(self, vhost,current_node, key, number ):
        station_control = self.rc.get_station_control(  vhost)
-       index_list = range(0,number)
-       index_list.reverse()
+       if number > 0:
+          index_list = range(0,number)
+          index_list.reverse()
+       else:
+           index_list = [0]
        return_value = []
        self.cc.create( key, self.cc_max_number,self.cc_db_size )
-       if len( index_list )==0 :
-           for i in index_list:
-               data = station_control.redis_lindex([{"key":key, "index":i } ])
-               current_data = data[1][0]["data"]
+       for i in index_list:
+           data = station_control.redis_lindex([{"key":key, "index":i } ])
+           
+           current_data = json.loads( data[1][0]["data"] )
+           if number > 0:
                self.cc.insert( key, {"current_data":current_data } )
-               return_value.append( current_data)
-       else:
-               data = station_control.redis_lindex([{"key":key, "index":0 } ])
-               current_data = data[1][0]["data"]
-               return_value.append( current_data)  
-       print "return_value",return_value[-1]         
-       node.properties["value"] = return_value[-1]
+           return_value.append( current_data)
        
-       node.push()
-       return return_value
+    
+       current_node.properties["value"] = json.dumps(return_value[-1])
+       
+       current_node.push()
+       return return_value[-1] 
   
   
 
@@ -114,54 +116,65 @@ class Update_Irrigation_Data():
        queue_depth = data[1][0]["data"]
        if number > queue_depth:
            number = queue_depth
-       index_list = range(0,number)
-       index_list.reverse()
+       if number > 0:
+          index_list = range(0,number)
+          index_list.reverse()
+       else:
+           index_list = [0]
+
+      
        return_value = {}
       
-       if len( index_list ) :
-           for i in index_list:
-               data = station_control.redis_lindex([{"key":key, "index":i } ])
-               flow_data_json = data[1][0]["data"]
-               flow_data      = json.loads( flow_data_json )
-               time           = flow_data["time"]
-               flow_data      = flow_data["fields"]
-               for j in flow_data:
-                   if return_value.has_key( j ) == False:
-                      return_value[j] = []
-                   flow_data[j]["time_stamp"] = time
-                   return_value[j].append( flow_data[j] )           
-       else:
-               
-               data = station_control.redis_lindex([{"key":key, "index":0 } ])
-            
-               flow_data_json = data[1][0]["data"]
-               flow_data      = json.loads( flow_data_json )
-               time           = flow_data["time"]
-               flow_data      = flow_data["fields"]
-               for i in flow_data:
-                   if return_value.has_key( i ) == False:
-                      return_value[i] = []
-                   flow_data[i]["time_stamp"] = time
-                   return_value[i].append( flow_data[i] )  
        
-        
+       for i in index_list:
+           data = station_control.redis_lindex([{"key":key, "index":i } ])
+           flow_data_json = data[1][0]["data"]
+           flow_data      = json.loads( flow_data_json )
+           time           = flow_data["time"]
+           flow_data      = flow_data["fields"]
+           for j in flow_data:
+               if return_value.has_key( j ) == False:
+                   return_value[j] = []
+               flow_data[j]["time_stamp"] = time
+               return_value[j].append( flow_data[j] )           
        return return_value
 
    def scale_sensor_data( self, conversion_factor, sensor_data ):
        for i in sensor_data:
-           i["max"]      = float(i["max"])*conversion_factor
-           i["std"]      = float(i["std"])*conversion_factor
-           i["average"]  = float(i["average"])*conversion_factor
-           i["total"]    = float(i["total"])*conversion_factor
+           i["max1"]      = float(i["max"])*conversion_factor
+           i["std"]       = float(i["std"])*conversion_factor
+           i["average1"]  = float(i["average"])*conversion_factor
+           i["total"]     = float(i["total"])*conversion_factor
            avg = i["average"]
            for j in range(0,len(i["data"])):
                i["data"][j] = float(i["data"][j])*conversion_factor
-           del i["min"]
+        
+        
            std = 0
-           if len(i["data"]) > 6:
-               for j in range( 5, len(i["data"])):
-                   std = std + ( i["data"][j] - avg)*(i["data"][j]-avg)
-               std = math.sqrt( std/(len(i["data"])-5))
+           max_val = -1
+           min_val = 100000
+           avg = 0
+           if len(i["data"]) > 5:
+               length = len(i["data"])
+               sample_length = length-5
+               
+               for j in range( 5, length ):
+                   sample = i["data"][j]
+                   if min_val > sample:
+                      min_val = sample
+                   if max_val < sample:
+                       max_val = sample
+                   avg = avg + sample
+               avg = avg/sample_length
+               i["average"] = avg
+               i["max"] =  max_val
+               i["min"] =  min_val
+               std = 0
+               for j in range( 5, length):
+                   sample = i["data"][j]
+                   std = std + ( sample - avg)*(sample-avg)
+                   
+               std = math.sqrt( std/(sample_length))
            i["std"] = std
            if len(i["data"] ) > 12:
               slope, intercept, r_value, p_value, std_err = stats.linregress(range( 5, len(i["data"])),i["data"][5:])
@@ -180,7 +193,7 @@ class Update_Irrigation_Data():
               i["std_err"]       = 0
               
            
-           
+       
        return sensor_data
      
 
@@ -194,16 +207,54 @@ class Update_Irrigation_Data():
                                                                      schedule_node.properties["namespace"],"STEP","name",str(step_number) )
        if len( steps_nodes ) == 0:
            raise  # for now
-       step_node = steps_nodes[0]
+       step_node            = steps_nodes[0]
+       card_name            =  step_node.properties["card"]
+       diagnostic_card      = self.qc.match_relation_property_specific( "CONTROLLER","namespace", 
+                                                                     controller_node.properties["namespace"],"DIAGNOSTIC_CARD","name",card_name  )
+       if len(diagnostic_card) > 0:
+          diagnostic_card = diagnostic_card[0]
+       label = "green" 
+       diag_text  = ""  
+   
+      
        step_name      =     step_node.properties["name"]
+       index = int( step_name ) -1    
        flow           =     self.qc.match_relation_property( "STEP","namespace", step_node.properties["namespace"],"FLOW_SENSOR_VALUE" ) 
        current        =     self.qc.match_relation_property( "STEP","namespace", step_node.properties["namespace"],"COIL_CURRENT" )
        current_limit  =     self.qc.match_relation_property( "STEP","namespace", step_node.properties["namespace"],"COIL_CURRENT_LIMIT" )
-       self.update_schedules_current( controller_node.properties["vhost"], current[0], "log_data:coil:"+schedule_name+":"+step_name, number ) #current            
-       index = int( step_name ) -1
-       current_limit[0].properties["limit_avg"] = coil_limit_values[index]["limit_avg"]
-       current_limit[0].properties["limit_std"] = coil_limit_values[index]["limit_std"]
+
+       coil_limit_avg = float(coil_limit_values[index]["limit_avg"])
+       coil_limit_std = float(coil_limit_values[index]["limit_std"])
+       current_limit[0].properties["limit_avg"] = coil_limit_avg
+       current_limit[0].properties["limit_std"] = coil_limit_std
        current_limit[0].push()
+
+
+       current_data = self.update_schedules_current( controller_node.properties["vhost"], current[0], "log_data:coil:"+schedule_name+":"+step_name, number )
+       
+       coil_current = current_data["fields"]["coil_current"]
+       curr_avg = float(coil_current["average"])
+       curr_max = float(coil_current["max"])
+       curr_min = float(coil_current["min"])
+       curr_std = float(coil_current["std"])
+       
+  
+       if abs( coil_limit_avg - curr_avg ) > 3: 
+          label = "red"
+       if abs( coil_limit_std - curr_std ) > 1.:
+          label = "red"
+       if abs( curr_max - curr_avg ) > 1.:
+          label = "red"
+       if abs( curr_min - curr_avg) > 1.:
+          label = "red"
+       diag_text = diag_text+"Current Limits  Avg: "+str(coil_limit_avg)+"   Std: "+str(coil_limit_std) +"\n"
+       diag_text = diag_text+"Current Values  Avg: "+str(curr_avg) +"   Std: "+str(curr_std)+"   Max: "+str(curr_max)+"   Min: "+str(curr_min)+"\n"
+       if label == "green":
+          diag_text = "Current OK:  \n"+diag_text
+       else:
+          diag_text = "**Current Error: \n"+diag_text+"\n**"
+
+              
        flow_data = self.get_flow_data( controller_node.properties["vhost"], "log_data:flow:"+schedule_name+":"+step_name,number)
        for l in flow:  #nodes of flow values
             sensor_name = l.properties["name"]
@@ -211,6 +262,36 @@ class Update_Irrigation_Data():
             conversion_factor = conversion_factors[ sensor_name ]
             sensor_data = flow_data[sensor_name]
             sensor_data = self.scale_sensor_data( conversion_factor, sensor_data )
+            diag_sensor = "Flow Analysis for flow sensor "+sensor_name+"\n"
+          
+            flow_limit_avg = float(flow_limit_values[sensor_name][index]["limit_avg"])*conversion_factors[sensor_name]
+            flow_limit_std = float(flow_limit_values[sensor_name][index]["limit_std"])*conversion_factors[sensor_name]
+            flow_data = sensor_data[0]
+            flow_avg  = flow_data["average"]
+            flow_std  = flow_data["std"]
+            flow_max  = flow_data["max"]
+            flow_min  = flow_data["min"]
+            slope_active = flow_data["slope_active"]
+            slope        = flow_data["slope"]
+            intercept    = flow_data["intercept"]
+            
+            diag_sensor = diag_sensor+"Flow Limits  Avg: "+str(flow_limit_avg)+"   Std: "+str(flow_limit_std) +"\n"
+            diag_sensor = diag_sensor+"Flow Values  Avg: "+str(flow_avg) +"   Std: "+str(flow_std)+"   Max: "+str(flow_max)+"   Min: "+str(flow_min)+"\n"
+            diag_sensor = diag_sensor+"Aux Flow Values Slope Active: "+str(slope_active)+"   Slope: "+str(slope)+"   Intercept: "+str(intercept)+"\n"
+            label = "green"
+            if abs( flow_limit_avg - flow_avg ) > 1: 
+                    label = "red"
+            if abs( flow_limit_std - flow_std ) > .5:
+               label = "red"
+            if abs( flow_max - flow_avg ) > 2.:
+               label = "red"
+            if abs( flow_min - flow_avg) > 2.:
+               label = "red"
+            if label == "green":
+               diag_sensor = "Flow OK:  \n"+diag_sensor
+            else:
+               diag_sensor = "**Flow Error Error: \n"+diag_sensor+"\n**"
+            diag_text = diag_text+diag_sensor
             l.properties["value"] = json.dumps(sensor_data[-1])
             l.properties["time_stamp"]  = sensor_data[-1]["time_stamp"]
             l.push()
@@ -224,11 +305,25 @@ class Update_Irrigation_Data():
                 l.properties["limit_std"] = float(flow_limit_values[name][index]["limit_std"])*conversion_factors[name]
                 l.push() 
 
+       if diagnostic_card == None:
+           return
+       try:
+            temp = json.loads( card.properties["new_commit"] )
+            if type(temp) is not list:
+               temp = []
+       except:
+            temp = []
+       temp.append(diag_text)
+       diagnostic_card.properties["new_commit"] = json.dumps(temp)
+       diagnostic_card.properties["label"] = label
+       diagnostic_card.push()
+       print diagnostic_card.properties
 
 
    # from event stream
    def update_irrigation_step( self,controller_node, schedule_name, step_number,number ):
        schedule_node = self.qc.match_relation_property_specific( "CONTROLLER","namespace", controller_node.properties["namespace"],"IRRIGATION_SCHEDULE","name",schedule_name )
+       
        if len( schedule_node) == 0:
             raise
        vhost = controller_node.properties["vhost"]
@@ -252,46 +347,7 @@ class Update_Irrigation_Data():
                steps                = self.qc.match_relation_property( "IRRIGATION_SCHEDULE","namespace", j.properties["namespace"],"STEP" )
                for k in steps:
                    step_name      =     k.properties["name"]
-                   flow           =     self.qc.match_relation_property( "STEP","namespace", k.properties["namespace"],"FLOW_SENSOR_VALUE" ) 
-                   current        =     self.qc.match_relation_property( "STEP","namespace", k.properties["namespace"],"COIL_CURRENT" )
-                   current_limit  =     self.qc.match_relation_property( "STEP","namespace", k.properties["namespace"],"COIL_CURRENT_LIMIT" )
-
-                   
-                   self.update_schedules_current( i.properties["vhost"], current[0], "log_data:coil:"+schedule_name+":"+step_name, number ) #current
-                   
-                   index = int( step_name ) -1
-                   current_limit[0].properties["limit_avg"] = coil_limit_values[index]["limit_avg"]
-                   current_limit[0].properties["limit_std"] = coil_limit_values[index]["limit_std"]
-                   current_limit[0].push()
-
-                   flow_data = self.get_flow_data( i.properties["vhost"], "log_data:flow:"+schedule_name+":"+step_name,number)
-                   for l in flow:  #nodes of flow values
-                       sensor_name = l.properties["name"]
-                       l.properties["mongodb_collection"] = "log_data:flow:"+schedule_name+":"+step_name+":"+sensor_name
-                       conversion_factor = conversion_factors[ sensor_name ]
-                       sensor_data = flow_data[sensor_name]
-                       sensor_data = self.scale_sensor_data( conversion_factor, sensor_data )
-                       l.properties["value"] = json.dumps(sensor_data[-1])
-                       l.properties["time_stamp"]  = sensor_data[-1]["time_stamp"]
-                       l.push()
-                       if number > 0 :
-                          self.cc.create( l.properties["mongodb_collection"], self.cc_max_number,self.cc_db_size )
-                          self.cc.insert( l.properties["mongodb_collection"], sensor_data )
-                       
-                       
-                      
-                      
-
-                   
-                   
-
-                   flow_limits        = self.qc.match_relation_property( "STEP","namespace", k.properties["namespace"],"FLOW_SENSOR_LIMIT" )  
-                   for l in flow_limits:
-                       name = l.properties["name"]
-                       l.properties["limit_avg"] = float(flow_limit_values[name][index]["limit_avg"])*conversion_factors[name]
-                       l.properties["limit_std"] = float(flow_limit_values[name][index]["limit_std"])*conversion_factors[name]
-                       
-                       l.push() 
+                   self.update_step_data( i, j, step_name, coil_limit_values,flow_limit_values,number )
                        
 if __name__ == "__main__":
 
@@ -303,8 +359,8 @@ if __name__ == "__main__":
    qc          = Query_Configuration()
    cc          = Capped_Collections( mongodb_db, mongodb_col, db_name = "Capped_Colections" ) 
    idd         = Update_Irrigation_Data(rc,qc,cc)
-   #idd.update_irrigation_data(0)
-   controller_list = qc.match_labels("CONTROLLER")
-   for i in controller_list:
-      idd.update_irrigation_step( i, "house", str(1) ,0)
+   idd.update_irrigation_data(0)
+   #controller_list = qc.match_labels("CONTROLLER")
+   #for i in controller_list:
+   #   idd.update_irrigation_step( i, "house", str(1) ,0)
                 
