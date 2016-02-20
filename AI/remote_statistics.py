@@ -194,7 +194,8 @@ class Analyize_Remote_Connectivity:
 
                    try:
                        temp = json.loads( card.properties["new_commit"] )
-                       length = len(temp)
+                       if type(temp) is not list:
+                          temp =[]
                    except:
                        temp = []
 
