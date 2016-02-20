@@ -14,31 +14,32 @@ class Transfer_Data:
        for i in controller_list:
             self.update_controller_cards( i )
 
+   def update_card( self, card_node ):
+       pr = card_node.properties
+       print pr["org_name"], pr["board_name"],pr["list_name"],pr["name"]
+       card = self.tm.find_card(  pr["org_name"], pr["board_name"],pr["list_name"], pr["name"] )    
+       self.tm.add_card_description(card, pr["description"] )
+       self.tm.set_card_label( card, pr["label"] )    
+       try:
+           new_commit = json.loads(pr["new_commit"])
+           print new_commit
+           if type(new_commit) is list:
+               for i in new_commit :
+                   self.tm.add_card_comment( card, i )
+           else:
+               pass
+       except:
+           pass
+       card_node.properties["new_commit"] = json.dumps([])
+       card_node.push()
+
+
+
 
    def update_controller_cards( self, controller ):
        card_list = self.qc.match_relation_property( "CONTROLLER","namespace",controller.properties["namespace"],"DIAGNOSTIC_CARD")
        for i in card_list:
-           pr = i.properties
-           print pr["org_name"], pr["board_name"],pr["list_name"],pr["name"]
-
-           card = self.tm.find_card(  pr["org_name"], pr["board_name"],pr["list_name"], pr["name"] )
-           
-           self.tm.add_card_description(card, pr["description"] )
-           self.tm.set_card_label( card, pr["label"] )
-           
-           try:
-               new_commit = json.loads(pr["new_commit"])
-               print new_commit
-               if type(new_commit) is list:
-                   for j in new_commit :
-                       self.tm.add_card_comment( card, j )
-               else:
-                  pass
-           except:
-               pass
-           i.properties["new_commit"] = json.dumps([])
-           i.push()
-      
+           self.update_card(i)      
 
 
  
