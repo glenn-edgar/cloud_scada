@@ -30,7 +30,9 @@ class Capped_Collections:
    def insert( self, collection_name, document ):
        self.mongodb_col.insert_document( self.db_name, collection_name,[document] )
  
-   
+   def get_head_documents( self, collection_name,query_number):
+       return self.mongodb_col.find_head_document( self.db_name, collection_name=collection_name,query_number = query_number )
+  
 
    def number( self, collection_name ):
        return self.mongodb_col.collection_number( self.db_name, collection_name)
@@ -48,16 +50,23 @@ if __name__ == "__main__":
    cc.create("test_2", 5, 1024)
    cc.create("test_1", 5, 1024)
    print cc.number("test_1")
+   
    print "tail documents",cc.get_tail_documents("test_1",5)
    cc.insert( "test_1", {"a":1} )
+   
    cc.insert( "test_1", {"a":2} )
    cc.insert( "test_1", {"a":3} )
    cc.insert( "test_1", {"a":4} )
    cc.insert( "test_1", {"a":5} )
    cc.insert( "test_1", {"a":6} )
    cc.insert( "test_1", {"a":7} )
+   print "head documents",cc.get_head_documents("test_1", 3)
    print cc.number("test_1")
+   
+   
    print "tail documents",cc.get_tail_documents("test_1",5)
    print "tail documents",cc.get_tail_documents("test_1",7)
    print "tail documents",cc.get_tail_documents("test_1",2)
+   print "tail documents",cc.get_tail_documents("test_1",1)
+   print "head documents",cc.get_head_documents("test_1",3)
    mongodb_db.remove_all_databases()
