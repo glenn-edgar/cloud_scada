@@ -89,6 +89,7 @@ class Mongodb_Collection():
           collection = db[ collection_name ]
           if query_number == 0:
               query_number = collection.count()
+
           if ascending_sort == True:
               return_value = list(collection.find(query, skip=index , limit=query_number, sort = [[ sort_field, pymongo.ASCENDING ]] )) 
           else:
@@ -97,6 +98,22 @@ class Mongodb_Collection():
           raise
       return return_value
 
+   def find_head_document( self, db_name="", collection_name="", query_number=1 ):
+      db = self.client[ db_name ]
+      return_value = None
+      if collection_name in list(db.collection_names()):
+          collection = db[ collection_name ]
+          count = collection.count()
+          if count < query_number:
+              query_number = count
+              index = 0
+          else:
+              index = count - query_number 
+          return_value = list(collection.find({}, skip=index , limit=count )) 
+     
+      else:
+          raise
+      return return_value
 
    def remove_document( self, db_name, collection_name, query  ):
       db = self.client[ db_name ]
@@ -161,7 +178,7 @@ if __name__ == "__main__":
    print mongodb_db.list_databases()
    mongodb_db.create_database( "test")
  
-   mongodb_col.create_collection("test","collection",capped = False, max_number= 255, collection_size = 100000)
+   mongodb_col.create_collection("test","collection",capped = True, max_number= 255, collection_size = 100000)
    print mongodb_col.collection_number(  "test", "collection" )
    print mongodb_db.list_databases()
    mongodb_col.delete_collection( "test", "collection")
@@ -175,8 +192,10 @@ if __name__ == "__main__":
    print "2",mongodb_col.find_document( db_name="test", collection_name="collection",query={"name":34}, index=0, query_number=2, sort_field = "date", ascending_sort = True  )
    print "0A",mongodb_col.find_document( db_name="test", collection_name="collection",query={"name":34}, index=0, query_number=0, sort_field = "date", ascending_sort = True  )
    print "0b",mongodb_col.find_document( db_name="test", collection_name="collection",query={"name":34}, index=0, query_number=0, sort_field = "date", ascending_sort = False  )
+   print "0c",mongodb_col.find_document( db_name="test", collection_name="collection",query={}, index=0, query_number=0, sort_field = "date", ascending_sort = False  )
    print "--",mongodb_col.find_document( db_name="test", collection_name="collection",query={"date":33}, index=0, query_number=0, sort_field = "date", ascending_sort = False  )
    print "tail",mongodb_col.collection_tail( db_name="test", collection_name = "collection",  query_number=3 )
+   print "head",mongodb_col.find_head_document( db_name="test", collection_name = "collection", query_number = 3)
    #print mongodb_col.find_document( "test", "collection",{"name":34}, 0, 0, ascending_sort = False  )
    print mongodb_db.list_databases()
 
