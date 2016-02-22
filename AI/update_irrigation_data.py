@@ -93,20 +93,24 @@ class Update_Irrigation_Data():
            index_list = [0]
        return_value = []
        self.cc.create( key, self.cc_max_number,self.cc_db_size )
+ 
        for i in index_list:
            data = station_control.redis_lindex([{"key":key, "index":i } ])
+        
+           try:
+               current_data = json.loads( data[1][0]["data"] )
+               return_value.append( current_data)
+               self.cc.insert( l.properties["mongodb_collection"], current_data )
+                
+           except:
+             pass
            
-           current_data = json.loads( data[1][0]["data"] )
-           if number > 0:
-               self.cc.insert( key, {"current_data":current_data } )
-           return_value.append( current_data)
        
     
        current_node.properties["value"] = json.dumps(return_value[-1])
        
        current_node.push()
        return return_value[-1] 
-  
   
 
 
@@ -297,7 +301,18 @@ class Update_Irrigation_Data():
             l.push()
             if number > 0 :
                 self.cc.create( l.properties["mongodb_collection"], self.cc_max_number,self.cc_db_size )
-                self.cc.insert( l.properties["mongodb_collection"], sensor_data )
+                data = self.cc.get_head_documents(l.properties["mongodb_collection"],1 )
+                if len(data) > 0:
+                    ref_time_stamp = data[0]["time_stamp"]
+                else:
+                    ref_time_stamp = 0
+                print ref_time_stamp
+ 
+                for i in sensor_data:
+                     print "flow", i["time_stamp"], ref_time_stamp ,(i["time_stamp"] > ref_time_stamp)
+                     if i["time_stamp"] > ref_time_stamp:
+                         self.cc.insert( l.properties["mongodb_collection"], i )
+               
             flow_limits        = self.qc.match_relation_property( "STEP","namespace", step_node.properties["namespace"],"FLOW_SENSOR_LIMIT" )  
             for l in flow_limits:
                 name = l.properties["name"]
@@ -359,7 +374,7 @@ if __name__ == "__main__":
    qc          = Query_Configuration()
    cc          = Capped_Collections( mongodb_db, mongodb_col, db_name = "Capped_Colections" ) 
    idd         = Update_Irrigation_Data(rc,qc,cc)
-   idd.update_irrigation_data(0)
+   idd.update_irrigation_data(5)
    #controller_list = qc.match_labels("CONTROLLER")
    #for i in controller_list:
    #   idd.update_irrigation_step( i, "house", str(1) ,0)
