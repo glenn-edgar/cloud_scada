@@ -30,17 +30,11 @@ class Construct_Farm():
        self.bc.pop_namespace()
 
 
-   def add_event_queue( self, *args):
-       self.bc.construct_node(  push_namespace=False,relationship="EVENT_QUEUE", label="EVENT_QUEUE", name="EVENT_QUEUE",
-                                    properties = {} )
+   def add_event_queue( self,name, events ):
+       self.bc.construct_node(  push_namespace=False,relationship="EVENT_QUEUE", label="EVENT_QUEUE", name=name,
+                                    properties = {  "timestamp":0, "events":json.dumps(events) } )
 
 
-   def add_system_event_queue( self, *args):
-       self.bc.construct_node(  push_namespace=False,
-                                    relationship="SYSTEM_EVENT_QUEUE", 
-                                    label="SYSTEM_EVENT_QUEUE", 
-                                    name="SYSTEM_EVENT_QUEUE",
-                                    properties = {} )
 
 
    def add_diagnostic_card_header( self, *args):
