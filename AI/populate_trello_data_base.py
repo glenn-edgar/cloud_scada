@@ -9,7 +9,7 @@ class Transfer_Data:
        self.tm = trello_management
        self.qc = query_configuration
 
-   def update_cards( self):
+   def update_cards( self,*args ):
        controller_list = self.qc.match_labels("CONTROLLER")
        for i in controller_list:
             self.update_controller_cards( i )

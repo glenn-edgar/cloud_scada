@@ -81,9 +81,12 @@ class Update_Irrigation_Valve_Current_Draw():
            
            
            i.push()
-        
+ 
+   def update_coil_current_cf( self ,*args  ):
+       self.update_coil_current(1)
    
    def update_coil_current( self ,number  ):
+       self.rc = Rabbitmq_Remote_Connections()
        controller_list = self.qc.match_labels("CONTROLLER")
        for i in controller_list:
 
@@ -102,9 +105,10 @@ class Analyize_Valve_Current_Data:
 
    def __init__( self, query_control ):
        self.qc = query_control
-       
 
-   def analyize_data( self ):
+         
+
+   def analyize_data( self,*args ):
        controller_list = self.qc.match_labels("CONTROLLER")
        for i in controller_list:
            remote_list = self.qc.match_relation_property( "CONTROLLER","name", i.properties["name"],"REMOTE" )

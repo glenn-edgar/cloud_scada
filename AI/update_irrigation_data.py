@@ -202,7 +202,7 @@ class Update_Irrigation_Data():
      
 
    def update_step_data( self, controller_node, schedule_node, step_number, coil_limit_values,flow_limit_values ,number):
-        
+      
        vhost = controller_node.properties["vhost"]
        conversion_factors = self.get_conversion_factors(vhost,controller_node )
     
@@ -337,6 +337,7 @@ class Update_Irrigation_Data():
 
    # from event stream
    def update_irrigation_step( self,controller_node, schedule_name, step_number,number ):
+       self.rc = Rabbitmq_Remote_Connections()
        schedule_node = self.qc.match_relation_property_specific( "CONTROLLER","namespace", controller_node.properties["namespace"],"IRRIGATION_SCHEDULE","name",schedule_name )
        
        if len( schedule_node) == 0:
@@ -347,7 +348,11 @@ class Update_Irrigation_Data():
        self.update_step_data( controller_node, schedule_node[0], step_number, coil_limit_values,flow_limit_values,number )
 
 
+   def update_irrigation_data_cf( self , *args):
+       self.update_irrigation_data(1)
+
    def update_irrigation_data( self , number):
+       self.rc = Rabbitmq_Remote_Connections()
        controller_list = self.qc.match_labels("CONTROLLER")
        for i in controller_list:
            vhost = i.properties["vhost"]
@@ -374,7 +379,7 @@ if __name__ == "__main__":
    qc          = Query_Configuration()
    cc          = Capped_Collections( mongodb_db, mongodb_col, db_name = "Capped_Colections" ) 
    idd         = Update_Irrigation_Data(rc,qc,cc)
-   idd.update_irrigation_data(5)
+   idd.update_irrigation_data(1)
    #controller_list = qc.match_labels("CONTROLLER")
    #for i in controller_list:
    #   idd.update_irrigation_step( i, "house", str(1) ,0)

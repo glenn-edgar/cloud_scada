@@ -60,29 +60,53 @@ class Analyize_Controller_Parameters():
        card.push()
        
  
-   def clear_ping( self ):
+   def clear_ping( self, *args ):
+
        controller_list = self.qc.match_labels("CONTROLLER")
        for i in controller_list:
            i.properties["ping_loss"] = 0
            i.properties["ping_count"] = 1
            i.push()
+           
 
 
 
-   def ping_controllers( self ):
+   def ping_controllers( self ,*args):
        controller_list = self.qc.match_labels("CONTROLLER")
        for i in controller_list:
+           self.rc = Rabbitmq_Remote_Connections()
            station_control = self.rc.get_station_control(  i.properties["vhost"] )
            ping_result = station_control.ping()
+           print "ping_result",ping_result
            if ping_result[0] == True:
                i.properties["ping_count"] = float(i.properties["ping_count"] )+1
            else:
                i.properties["ping_count"] = float(i.properties["ping_count"] )+1
                i.properties["ping_loss"] = float(i.properties["ping_loss"] )+1
            i.push()
-           
 
-   def update_controller_properties( self ):
+   def clear_controller_resets( self,*args):          
+       resets = {}
+       resets["temperature"] = False
+       resets["irrigation_resets"] = True
+       resets["system_resets"] = True
+       resets["clean_filter"]  = False
+       resets["check_off"]     = False
+       controller_list = self.qc.match_labels("CONTROLLER")
+       for i in controller_list:
+           rpc_queue = i.properties["rpc_queue"]
+           redis_key = i.properties["redis_key"]
+           self.rc = Rabbitmq_Remote_Connections()
+           station_control = self.rc.get_station_control(  i.properties["vhost"] )
+           redis_data  = station_control.redis_hget_all( [ {"hash":redis_key} ] )[1][0]["data"]
+           for j in redis_data.keys():
+               if resets.has_key( j ):
+                  if resets[j] == True:
+                      station_control.redis_hset( [{"hash":redis_key ,"key":j,"data":0 }] ) 
+                      
+                      
+
+   def update_controller_properties( self,*args ):
        limits = {}
        limits["temperature"] = { "yellow":120, "red":140 }
        limits["irrigation_resets"] = {"yellow":1,"red":2 }
@@ -119,6 +143,7 @@ class Analyize_Controller_Parameters():
            self.update_properties( card, limits["ping"],"RabbitMQ Packet Loss Rate", rate )
            rpc_queue = i.properties["rpc_queue"]
            redis_key = i.properties["redis_key"]
+           self.rc = Rabbitmq_Remote_Connections()
            station_control = self.rc.get_station_control(  i.properties["vhost"] )
            redis_data  = station_control.redis_hget_all( [ {"hash":redis_key} ] )[1][0]["data"]
            
@@ -129,7 +154,8 @@ class Analyize_Controller_Parameters():
                    
                    self.update_properties( card, limits[j],j,redis_data[j] )
                    if resets[j] == True:
-                       station_control.redis_hset( [{"hash":redis_key ,"key":j,"value":0 }] ) 
+                       station_control.redis_hset( [{"hash":redis_key ,"key":j,"data":0 }] ) 
+                       
       
                   
                     
@@ -166,9 +192,10 @@ class Analyize_Remote_Connectivity:
        return error_rate, message_loss
 
 
-   def analyize_data( self ):
+   def analyize_data( self,*args ):
        controller_list = self.qc.match_labels("CONTROLLER")
        for i in controller_list:
+           self.rc = Rabbitmq_Remote_Connections()
            station_control  = self.rc.get_station_control(  i.properties["vhost"] )
            udp_server_list  = self.qc.match_relation_property("CONTROLLER","name",i.properties["name"],"UDP_IO_SERVER")
            for j in udp_server_list:

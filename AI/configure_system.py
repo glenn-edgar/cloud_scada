@@ -38,8 +38,25 @@ if __name__ == "__main__" :
     "clean_filter":"Main Controller Clean Filter",
     "check_off":"Main Controller Check Off" },
     "CONTROLLER_STATUS")
-   cf.add_event_queue()
-   cf.add_system_event_queue()
+
+   cf.add_event_queue( "cloud_alarm_queue",
+                       { 
+                         "OPEN_MASTER_VALVE": {"card":"MANUAL_OPERATIONS","label":"yellow" },
+                         "CLOSE_MASTER_VALVE":{"card":"MANUAL_OPERATIONS","label":"yellow" },
+                         "DIAGNOSTICS_SCHEDULE_STEP_TIME":{"card":"MANUAL_OPERATIONS","label":"yellow" },
+                         "RESUME_OPERATION":{"card":"MANUAL_OPERATIONS","label":"yellow" },
+                         "OFFLINE":{"card":"MANUAL_OPERATIONS","label":"yellow" },
+                         "SKIP_STATION":{"card":"MANUAL_OPERATIONS","label":"yellow" },
+                         "IRRIGATION:CURRENT_ABORT":{"card":"ABORT_OPERATIONS","label":"red" },
+                         "IRRIGATION:FLOW_ABORT":{"card":"ABORT_OPERATIONS","label":"red" }
+                       })
+
+   cf.add_event_queue( "QUEUES:CLOUD_ALARM_QUEUE",
+                        { 
+                          "store_eto": {"card":"ETO History","label":"green" },
+                          "reboot": {"card":"Reset History","label":"red" },
+                        } )
+
    cf.add_diagnostic_card_header()
    org_name =    "LaCima Ranch"
    list_name =   "PI_1 Irrigation Controller"
@@ -48,7 +65,7 @@ if __name__ == "__main__" :
    cf.add_diagnostic_card(org_name,board_name,list_name,"Main Controller Connectivity" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"Main Controller Irrigation Resets" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"Main Controller System Resets" )
-
+   cf.add_diagnostic_card(org_name,board_name,list_name,"Reset History")
    cf.add_diagnostic_card(org_name,board_name,list_name,"Remote 1 Connectivity" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"Remote 2 Connectivity" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"Remote 3 Connectivity" )
@@ -59,9 +76,15 @@ if __name__ == "__main__" :
    cf.add_diagnostic_card(org_name,board_name,list_name,"Remote 1 Shorted Selenoid" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"Remote 2 Shorted Selenoid" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"Remote 3 Shorted Selenoid" )
+
    board_name  = "Irrigation Plumbing"
+   cf.add_diagnostic_card(org_name,board_name,list_name,"ABORT_OPERATIONS")
+   cf.add_diagnostic_card(org_name,board_name,list_name,"ETO History" )
+   cf.add_diagnostic_card(org_name,board_name,list_name,"MANUAL_OPERATIONS" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"Main Controller Clean Filter" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"Main Controller Check Off"  )
+
+ 
    board_name = "Irrigation Schedules"
    for i in range(1,12):
        cf.add_diagnostic_card(org_name,board_name,list_name,"fruit_trees_low_water:"+str(i) )
