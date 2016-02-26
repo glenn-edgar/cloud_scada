@@ -48,7 +48,9 @@ if __name__ == "__main__" :
                          "OFFLINE":{"card":"MANUAL_OPERATIONS","label":"yellow" },
                          "SKIP_STATION":{"card":"MANUAL_OPERATIONS","label":"yellow" },
                          "IRRIGATION:CURRENT_ABORT":{"card":"ABORT_OPERATIONS","label":"red" },
-                         "IRRIGATION:FLOW_ABORT":{"card":"ABORT_OPERATIONS","label":"red" }
+                         "IRRIGATION:FLOW_ABORT":{"card":"ABORT_OPERATIONS","label":"red" },
+                         "CHECK_OFF":{"card":"check_off","label":"fromevent"},
+                         "CLEAN_FILTER":{"card":"clean_filter","label":"green"}
                        })
 
    cf.add_event_queue( "QUEUES:CLOUD_ALARM_QUEUE",

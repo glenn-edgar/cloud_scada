@@ -45,6 +45,10 @@ class Monitor_Event_Queues():
    def process_card( self, card_dict, event_data ):
        card_node = card_dict["card_node"]
        label     = card_dict["card_action"]["label"]
+       if label ==  "fromevent":
+         label = event_data["status"].lower()
+         print "---------->",label,event_data
+         quit()
        diag_text = "New Event:  "+event_data["event"] +"  Data: "+json.dumps(event_data)
        print "diag_text  ",diag_text
 
@@ -70,6 +74,9 @@ class Monitor_Event_Queues():
                return_value[i] = { "card_node":card[0], "card_action": cards_actions[i] }
 
        return return_value
+
+   def monitor_event_queue_cf( self, *args ):
+       self.monitor_event_queue( 50 )
 
    def monitor_event_queue( self,search_depth, *args ):
        ref_time = time.time()
@@ -98,9 +105,10 @@ class Monitor_Event_Queues():
                        data_base64 = data[1][0]["data"]
                        data_json  = base64.b64decode( data_base64)
                        data       = json.loads(data_json)
+                       
                        if data["time"] > timestamp_max:
                            timestamp_max = data["time"]
-                       if timestamp < data["time"] :
+                       if timestamp < data["time"]  :
                            #print k,time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(data["time"])), data["status"], data["event"]
                            event = data["event"]
                            #print "event",event,cards.keys()

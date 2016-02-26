@@ -66,9 +66,9 @@ class Update_Irrigation_Data():
        data = station_control.redis_lindex([{"key":key, "index":0 } ])
        flow_data_json = data[1][0]["data"]
        flow_data      = json.loads( flow_data_json )
-       print conversion_factors
+      
        for i in conversion_factors.keys():
-           print i, conversion_factors[i]
+           
            factor = float(conversion_factors[i])
            sensor_data = flow_data["fields"][i]
            sensor_data["std"]      =  float(sensor_data["std"])*factor
@@ -78,7 +78,7 @@ class Update_Irrigation_Data():
            for j in range(0,len(sensor_data["data"] )):
                sensor_data["data"][j] = float(sensor_data["data"][j]) *factor  
 
-       print sensor_data
+       
        quit()
 
 
@@ -91,26 +91,40 @@ class Update_Irrigation_Data():
           index_list.reverse()
        else:
            index_list = [0]
-       return_value = []
+
        self.cc.create( key, self.cc_max_number,self.cc_db_size )
- 
+       data = self.cc.get_head_documents(key,1 )
+       
+       if len(data) > 0:
+           ref_time_stamp = data[0]["time"]
+       else:
+           ref_time_stamp = 0
+       
+    
        for i in index_list:
            data = station_control.redis_lindex([{"key":key, "index":i } ])
         
            try:
                current_data = json.loads( data[1][0]["data"] )
-               return_value.append( current_data)
-               self.cc.insert( l.properties["mongodb_collection"], current_data )
+               if current_data["time"] > ref_time_stamp: 
+                   print "should not happen"
+                   self.cc.insert( key, current_data )
                 
            except:
-             pass
-           
+               print "exception"
+
+       data = self.cc.get_head_documents(key,1 )
+
+       if len(data) > 0:
+           return_value = data[0]["fields"]
+       else:
+           return_value = None
        
-    
-       current_node.properties["value"] = json.dumps(return_value[-1])
+        
+       current_node.properties["value"] = json.dumps(return_value)
        
        current_node.push()
-       return return_value[-1] 
+       return return_value
   
 
 
@@ -236,7 +250,7 @@ class Update_Irrigation_Data():
 
        current_data = self.update_schedules_current( controller_node.properties["vhost"], current[0], "log_data:coil:"+schedule_name+":"+step_name, number )
        
-       coil_current = current_data["fields"]["coil_current"]
+       coil_current = current_data["coil_current"]
        curr_avg = float(coil_current["average"])
        curr_max = float(coil_current["max"])
        curr_min = float(coil_current["min"])
@@ -306,10 +320,10 @@ class Update_Irrigation_Data():
                     ref_time_stamp = data[0]["time_stamp"]
                 else:
                     ref_time_stamp = 0
-                print ref_time_stamp
+                
  
                 for i in sensor_data:
-                     print "flow", i["time_stamp"], ref_time_stamp ,(i["time_stamp"] > ref_time_stamp)
+                     
                      if i["time_stamp"] > ref_time_stamp:
                          self.cc.insert( l.properties["mongodb_collection"], i )
                
@@ -332,7 +346,7 @@ class Update_Irrigation_Data():
        diagnostic_card.properties["new_commit"] = json.dumps(temp)
        diagnostic_card.properties["label"] = label
        diagnostic_card.push()
-       print diagnostic_card.properties
+       diagnostic_card.properties
 
 
    # from event stream

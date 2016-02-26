@@ -34,7 +34,7 @@ from update_irrigation_valve_current_draw import Analyize_Valve_Current_Data
 from remote_statistics                    import Analyize_Controller_Parameters
 from remote_statistics                    import Analyize_Remote_Connectivity
 from populate_trello_data_base            import Transfer_Data
-
+from manage_event_queue                   import Monitor_Event_Queues
 
 
 
@@ -58,10 +58,11 @@ if __name__ == "__main__":
    aid             = Analyize_Valve_Current_Data( qc )
    ac              = Analyize_Controller_Parameters( rc, qc )
    ar              = Analyize_Remote_Connectivity(rc, qc)
+   me              = Monitor_Event_Queues( rc, qc )
    cf              = py_cf.CF_Interpreter()
 
    cf.define_chain("Initialize_System",True)
-   cf.insert_link( "link_1","Enable_Chain",[["Check_Online","Update_Trello","Update_Irrigation_Data"]])
+   cf.insert_link( "link_1","Enable_Chain",[["Check_Online","Update_Trello","Update_Irrigation_Data","Monitor_Events"]])
    cf.insert_link( "link_2","One_Step",[ac.clear_ping] )
    cf.insert_link( "link_3","One_Step",[ac.clear_controller_resets] )
    cf.insert_link( "link_4","Disable_Chain",[["Initialize_System"]])
@@ -73,6 +74,12 @@ if __name__ == "__main__":
    cf.insert_link( "link_1","WaitTime",[5*60,0 ])
    cf.insert_link( "link_2","Reset",[] )
      
+   cf.define_chain("Monitor_Events",False)
+   cf.insert_link( "link_2","One_Step",[me.monitor_event_queue_cf] )
+   cf.insert_link( "link_1","WaitTime",[15*60,0 ])
+   cf.insert_link( "link_2","Reset",[] )
+
+
 
    cf.define_chain("Update_Trello",False )
    cf.insert_link( "link_1","WaitTime",[4*3600,0] )
@@ -92,8 +99,6 @@ if __name__ == "__main__":
    cf.insert_link( "link_6",  "WaitTod", ["*",20,"*","*" ] ) # GMT Time add +8 to time  or +9 in summer
    cf.insert_link( "link_7",  "Reset",[])
  
-   
-
 
    cf_environ = py_cf.Execute_Cf_Environment( cf )
    cf_environ.execute()
