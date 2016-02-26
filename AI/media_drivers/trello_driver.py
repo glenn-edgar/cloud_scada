@@ -3,7 +3,7 @@
 
 import redis
 import json
-
+import requests
 from trello import TrelloApi
 from trello import Members
 from trello import Boards
@@ -25,6 +25,10 @@ class Trello_Api:
        self.list_api                 = Lists( key, token )
        self.card_api                 = Cards( key, token )
        self.member_api               = Members( key, token )
+       
+
+
+
 
    def organization_list_to_dictionary( self,key, convert_list, delete_function ):
        return_value = {}
@@ -149,6 +153,11 @@ class Trello_Api:
    def delete_list( self, board, name ):
        self.delete_helper( name, self.find_lists( board ), self.list_api.update_closed )
 
+   def update_board_background_color(self, board, value): #color value
+       resp = requests.put("https://trello.com/1/boards/%s/prefs/background" % (board["id"]), params=dict(key=self.key, token=self.token), data=dict(value=value))
+       resp.raise_for_status()
+       return json.loads(resp.content)
+
 
    #
    #
@@ -212,6 +221,7 @@ if __name__ == "__main__":
   
    print trello_api.find_boards( organization ).keys()
    board =  trello_api.create_board( organization, "test board", "test board descriptions" )
+   trello_api.update_board_background_color( board,"red")
    list_element  =  trello_api.create_list( board, "test list", "test list descriptions" )
    print "list_element",list_element
    
@@ -222,6 +232,7 @@ if __name__ == "__main__":
    trello_api.add_card_label( card_element,"blue")
    trello_api.add_card_label( card_element,"black")
    trello_api.delete_card_label( card_element,"red")
+   
    
    trello_api.delete_card(list_element,"test card" )  
    trello_api.delete_board( organization, "test board")
