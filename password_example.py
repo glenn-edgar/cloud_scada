@@ -32,6 +32,7 @@ redis.hset("MEDIA_DRIVERS","TRELLO",json.dumps({"title":"xxxx",
 "application_name":"xxxxx",
 "user_name":"xxxxx"
  } ))
+redis.hset("MEDIA_DRIVERS","Slack",json.dumps({"token":'xxxxxxxxx'}))
 
 redis.hset("AI_rabbitmq","username", "xxxxx"        )
 redis.hset("AI_rabbitmq","password", 'xxxx'     )
