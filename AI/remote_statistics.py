@@ -34,6 +34,7 @@ class Analyize_Controller_Parameters():
        return color,text
 
    def update_properties( self, card, limits, title,value ):
+       
        if hasattr(limits, '__call__') == True:
            color , text = limits( title, value )
            
@@ -54,6 +55,7 @@ class Analyize_Controller_Parameters():
              temp = []
        except:
             temp = []
+       #print "title",title,value,color,text
        temp.append( text)
        card.properties["new_commit"] = json.dumps(temp)
        card.properties["label"] = color
@@ -77,7 +79,7 @@ class Analyize_Controller_Parameters():
            self.rc = Rabbitmq_Remote_Connections()
            station_control = self.rc.get_station_control(  i.properties["vhost"] )
            ping_result = station_control.ping()
-           print "ping_result",ping_result
+           #print "ping_result",ping_result
            if ping_result[0] == True:
                i.properties["ping_count"] = float(i.properties["ping_count"] )+1
            else:
@@ -148,12 +150,15 @@ class Analyize_Controller_Parameters():
            redis_data  = station_control.redis_hget_all( [ {"hash":redis_key} ] )[1][0]["data"]
            
            for j in redis_data.keys():
+               
                if card_dict.has_key(j) == True:
+                   
                    card_name = card_dict[j]
                    card = self.qc.match_relation_property_specific( "CONTROLLER","name",i.properties["name"],"DIAGNOSTIC_CARD","name",card_name )[0]
-                   
+                                 
                    self.update_properties( card, limits[j],j,redis_data[j] )
                    if resets[j] == True:
+                       
                        station_control.redis_hset( [{"hash":redis_key ,"key":j,"data":0 }] ) 
                        
       
@@ -250,7 +255,8 @@ if __name__ == "__main__":
    ac.clear_ping()
    '''
    ac.update_controller_properties() 
-
+   ac.clear_controller_resets()
+   ac.update_controller_properties()
 
   
    ar.analyize_data()

@@ -35,22 +35,27 @@ from update_irrigation_valve_current_draw import Analyize_Valve_Current_Data
 from remote_statistics                    import Analyize_Controller_Parameters
 from remote_statistics                    import Analyize_Remote_Connectivity
 from populate_trello_data_base            import Transfer_Data
+import py_cf 
+
 
 class Monitor_Event_Queues():
 
-   def __init__( self, rabbitmq_remote_connections, query_configuration ):
+   def __init__( self, rabbitmq_remote_connections, query_configuration, chain_flow ):
        self.rc               = rabbitmq_remote_connections
        self.qc               = query_configuration
+       self.cf               = chain_flow
 
    def process_card( self, card_dict, event_data ):
        card_node = card_dict["card_node"]
        label     = card_dict["card_action"]["label"]
+       print "event_data",event_data["event"]
+       print "card action",card_dict["card_action"].keys()
        if label ==  "fromevent":
          label = event_data["status"].lower()
          print "---------->",label,event_data
-         quit()
+         
        diag_text = "New Event:  "+event_data["event"] +"  Data: "+json.dumps(event_data)
-       print "diag_text  ",diag_text
+       #print "diag_text  ",diag_text
 
        try:
            temp = json.loads( card.properties["new_commit"] )
@@ -63,7 +68,9 @@ class Monitor_Event_Queues():
        card_node.properties["new_commit"] = json.dumps(temp)
        card_node.properties["label"] = label
        card_node.push()
-       
+ 
+
+              
    def get_cards( self, controller, cards_actions ):       
        return_value = {}
        for i in cards_actions.keys():
@@ -77,6 +84,15 @@ class Monitor_Event_Queues():
 
    def monitor_event_queue_cf( self, *args ):
        self.monitor_event_queue( 50 )
+
+
+
+
+
+
+
+
+
 
    def monitor_event_queue( self,search_depth, *args ):
        ref_time = time.time()
@@ -111,8 +127,8 @@ class Monitor_Event_Queues():
                        if timestamp < data["time"]  :
                            #print k,time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(data["time"])), data["status"], data["event"]
                            event = data["event"]
-                           #print "event",event,cards.keys()
                            if cards.has_key(event):
+                              print "made it here"
                               self.process_card( cards[event], data )
                            else:
                               pass
@@ -120,7 +136,7 @@ class Monitor_Event_Queues():
                        
                print "time_stamps",j.properties["timestamp"],timestamp_max
                j.properties["timestamp"] = timestamp_max
-               j.push()
+               #j.push()
 
 
 
@@ -144,9 +160,9 @@ IRRIGATION:FLOW_ABORT
 if __name__ == "__main__":
    rc                            = Rabbitmq_Remote_Connections()
    qc                            = Query_Configuration()
-
+   cf                            = py_cf.CF_Interpreter()
    redis_startup                 = redis.StrictRedis( host = "127.0.0.1", port=6379, db = 1 )
-   meq                           = Monitor_Event_Queues( rc, qc  )
+   meq                           = Monitor_Event_Queues( rc, qc, cf  )
    #meq.monitor_cloud_queue()
    meq.monitor_event_queue(25)
 

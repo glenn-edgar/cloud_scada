@@ -49,8 +49,8 @@ if __name__ == "__main__" :
                          "SKIP_STATION":{"card":"MANUAL_OPERATIONS","label":"yellow" },
                          "IRRIGATION:CURRENT_ABORT":{"card":"ABORT_OPERATIONS","label":"red" },
                          "IRRIGATION:FLOW_ABORT":{"card":"ABORT_OPERATIONS","label":"red" },
-                         "CHECK_OFF":{"card":"check_off","label":"fromevent"},
-                         "CLEAN_FILTER":{"card":"clean_filter","label":"green"}
+                         "CHECK_OFF":{"card":"Check Off","label":"fromevent" },
+                         "CLEAN_FILTER":{"card":"Clean Filter","label":"green" }
                        })
 
    cf.add_event_queue( "QUEUES:CLOUD_ALARM_QUEUE",
@@ -83,8 +83,8 @@ if __name__ == "__main__" :
    cf.add_diagnostic_card(org_name,board_name,list_name,"ABORT_OPERATIONS")
    cf.add_diagnostic_card(org_name,board_name,list_name,"ETO History" )
    cf.add_diagnostic_card(org_name,board_name,list_name,"MANUAL_OPERATIONS" )
-   cf.add_diagnostic_card(org_name,board_name,list_name,"Main Controller Clean Filter" )
-   cf.add_diagnostic_card(org_name,board_name,list_name,"Main Controller Check Off"  )
+   cf.add_diagnostic_card(org_name,board_name,list_name,"Clean Filter" )
+   cf.add_diagnostic_card(org_name,board_name,list_name,"Check Off"  )
 
  
    board_name = "Irrigation Schedules"

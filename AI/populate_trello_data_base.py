@@ -16,13 +16,14 @@ class Transfer_Data:
 
    def update_card( self, card_node ):
        pr = card_node.properties
-       print pr["org_name"], pr["board_name"],pr["list_name"],pr["name"]
+       #print pr["org_name"], pr["board_name"],pr["list_name"],pr["name"]
        card = self.tm.find_card(  pr["org_name"], pr["board_name"],pr["list_name"], pr["name"] )    
        self.tm.add_card_description(card, pr["description"] )
-       self.tm.set_card_label( card, pr["label"] )    
+       self.tm.set_card_label( card, pr["label"] )  
+       #print "pr",pr["name"],pr["label"]  
        try:
            new_commit = json.loads(pr["new_commit"])
-           print new_commit
+           #print new_commit
            if type(new_commit) is list:
                for i in new_commit :
                    self.tm.add_card_comment( card, i )
@@ -34,15 +35,18 @@ class Transfer_Data:
        card_node.push()
 
 
-
-
    def update_controller_cards( self, controller ):
        card_list = self.qc.match_relation_property( "CONTROLLER","namespace",controller.properties["namespace"],"DIAGNOSTIC_CARD")
        for i in card_list:
            self.update_card(i)      
 
+   def reset_card_colors( self,chainFlowHandle,chainObj,parameters,event ):
+       card_list = parameters[1]
+       for card_id in card_list:
+           card = self.tm.find_card(  card_id["org_name"], card_id["board_name"], card_id["list_name"], card_id["card_name"] )
+           self.tm.set_card_label( card, "green" )
 
- 
+   
 if __name__ == "__main__":
 
    redis_startup = redis.StrictRedis( host = "127.0.0.1", port=6379, db = 1 )
