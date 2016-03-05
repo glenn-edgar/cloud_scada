@@ -136,7 +136,7 @@ class Monitor_Event_Queues():
                        
                print "time_stamps",j.properties["timestamp"],timestamp_max
                j.properties["timestamp"] = timestamp_max
-               #j.push()
+               j.push()
 
 
 

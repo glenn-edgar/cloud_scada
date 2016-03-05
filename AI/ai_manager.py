@@ -35,12 +35,17 @@ from remote_statistics                    import Analyize_Controller_Parameters
 from remote_statistics                    import Analyize_Remote_Connectivity
 from populate_trello_data_base            import Transfer_Data
 from manage_event_queue                   import Monitor_Event_Queues
-
+from slacker                              import Slacker
 
 
 
 if __name__ == "__main__":
    redis_startup                 = redis.StrictRedis( host = "127.0.0.1", port=6379, db = 1 )
+   slack_json = redis_startup.hget("MEDIA_DRIVERS","Slack")
+   slack_dict   = json.loads( slack_json )
+   token           = slack_dict["token"]
+   print "token",token
+   slack = Slacker(token)
  
    client          = MongoClient()
    mongodb_db      = Mongodb_DataBase( client )
@@ -49,7 +54,7 @@ if __name__ == "__main__":
    trello_dict     = json.loads( trello_json )
    tm              = Trello_Management( trello_dict )
    qc              = Query_Configuration()
-   td              = Transfer_Data( tm, qc ) 
+   td              = Transfer_Data( tm, qc , slack,"#System-Issues" ) 
    rc              = Rabbitmq_Remote_Connections()
 
    cc              = Capped_Collections( mongodb_db, mongodb_col, db_name = "Capped_Colections" ) 
@@ -62,8 +67,7 @@ if __name__ == "__main__":
    me              = Monitor_Event_Queues( rc, qc, cf )
 
    cf.define_chain("Initialize_System",True)
-   #cf.insert_link( "link_1","Enable_Chain",[["Check_Online","Update_Trello","Update_Irrigation_Data","Monitor_Events","End_Of_Day_House_Keeping"]])
-   cf.insert_link( "link_1","Enable_Chain",[["End_Of_Day_House_Keeping"]])
+   cf.insert_link( "link_1","Enable_Chain",[["Check_Online","Update_Trello","Update_Irrigation_Data","Monitor_Events","End_Of_Day_House_Keeping"]])
    cf.insert_link( "link_2","One_Step",[ac.clear_ping] )
    cf.insert_link( "link_3","One_Step",[ac.clear_controller_resets] )
    cf.insert_link( "link_4","Disable_Chain",[["Initialize_System"]])
@@ -90,12 +94,13 @@ if __name__ == "__main__":
    cf.insert_link( "link_4","One_Step",[ td.update_cards ] )
    cf.insert_link( "link_5","Reset",[])
  
+   
    cf.define_chain("Update_Irrigation_Data",False )
-   cf.insert_link( "link_1",  "WaitTod", ["*",19,"*","*" ] ) # GMT Time add +8 to time  or +9 in summer
+   cf.insert_link( "link_1",  "WaitTod", ["*",21,"*","*" ] ) # GMT Time add +8 to time  or +9 in summer
    cf.insert_link( "link_0",  "Log",["made it here"])
    cf.insert_link( "link_2",  "One_Step",[cd.update_coil_current_cf] )
    cf.insert_link( "link_5",  "One_Step",[td.update_cards ] )
-   cf.insert_link( "link_6",  "WaitTod", ["*",20,"*","*" ] ) # GMT Time add +8 to time  or +9 in summer
+   cf.insert_link( "link_6",  "WaitTod", ["*",22,"*","*" ] ) # GMT Time add +8 to time  or +9 in summer
    cf.insert_link( "link_7",  "Reset",[])
  
    cf.define_chain("End_Of_Day_House_Keeping",False)
@@ -103,7 +108,6 @@ if __name__ == "__main__":
    cf.insert_link( "link_1",  "Log",      ["made it here"])
    cf.insert_link( "link_2",  "One_Step", [ac.clear_controller_resets ] )
    cf.insert_link( "link_3",  "One_Step", [ac.clear_ping] )
-   cf.insert_link( "link_4",  "One_Step", [td.reset_card_colors,[{"org_name":"LaCima Ranch","board_name":"System Operation","list_name":"PI_1 Irrigation Controller", "card_name":"Reset History" } ] ] )
    cf.insert_link( "link_5",  "WaitTod",  ["*",9,"*","*" ] ) # GMT Time add +8 to time  or +9 in summer
    cf.insert_link( "link_6",  "Reset",    [] )
 
