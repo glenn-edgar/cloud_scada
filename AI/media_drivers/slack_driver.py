@@ -37,9 +37,9 @@ if __name__ == "__main__":
    # Send a message to #general channel
    slack.chat.post_message('#general', 'Hello fellow slackers!', as_user=False)
    try:
-       slack.channels.create("#xxxx")
+       slack.channels.create("#laCima-Issues")
    except:
-       pass
+       print "channel not created"
 
 
 
