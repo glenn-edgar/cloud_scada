@@ -34,9 +34,7 @@ if __name__ == "__main__" :
    {"temperature":"Main Controller Temperature",
     "ping":"Main Controller Connectivity",
     "irrigation_resets":"Main Controller Irrigation Resets",
-    "system_resets":"Main Controller System Resets",
-    "clean_filter":"Main Controller Clean Filter",
-    "check_off":"Main Controller Check Off" },
+    "system_resets":"Main Controller System Resets"},
     "CONTROLLER_STATUS")
 
    cf.add_event_queue( "cloud_alarm_queue",

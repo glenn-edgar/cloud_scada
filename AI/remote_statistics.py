@@ -150,7 +150,7 @@ class Analyize_Controller_Parameters():
            redis_data  = station_control.redis_hget_all( [ {"hash":redis_key} ] )[1][0]["data"]
            
            for j in redis_data.keys():
-               
+
                if card_dict.has_key(j) == True:
                    
                    card_name = card_dict[j]
@@ -254,9 +254,10 @@ if __name__ == "__main__":
    ac.update_controller_properties()
    ac.clear_ping()
    '''
-   ac.update_controller_properties() 
-   ac.clear_controller_resets()
-   ac.update_controller_properties()
+   #ac.update_controller_properties() 
+   #ac.clear_controller_resets()
+   #ac.update_controller_properties()
 
   
-   ar.analyize_data()
+   #ar.analyize_data()
+   ac.update_controller_properties()
