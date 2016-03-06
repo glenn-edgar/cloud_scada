@@ -21,7 +21,7 @@ class Transfer_Data:
        for i in controller_list:
             self.update_controller_cards( i )
 
-   def update_board_color( self, color ):
+   def update_board_color( self, pr ):
        test_color = pr["label"]
        ref_color =  self.tm.board_element["prefs"]["background"]
        if ref_color != "red":  
@@ -45,27 +45,32 @@ class Transfer_Data:
        pr = card_node.properties
        #print pr["org_name"], pr["board_name"],pr["list_name"],pr["name"]
        card = self.tm.find_card(  pr["org_name"], pr["board_name"],pr["list_name"], pr["name"] )    
+       
        self.tm.add_card_description(card, pr["description"] )
-       self.tm.set_card_label( card, pr["label"] )
+       self.tm.set_card_label( card,  pr["label"] )
        
      
        try:
            new_commit = json.loads(pr["new_commit"])
-           #print new_commit
+           
            if type(new_commit) is list:
+               
                if len( new_commit ) > 0:
-                  self.update_board_color( pr["label"] )
-               if pr["label"] != "green":
-                   try:
-                        self.slack.channels.create(self.slack_channel )
-                   except:
-                        pass
+               
+                  self.update_board_color( pr )
+                
+                  if pr["label"] != "green":
+                       try:
+                           self.slack.channels.create(self.slack_channel )
+                       except:
+                          pass
 
-                   msg = "Trello Org: "+pr["org_name"]+" Board: "+pr["board_name"]+" List: "+pr["list_name"]+"  Card: "+pr["name"] + "  Alert Level: "+pr["label"]
-                   self.slack.chat.post_message(self.slack_channel,msg, as_user=False)                
+                       msg = "Trello Org: "+pr["org_name"]+" Board: "+pr["board_name"]+" List: "+pr["list_name"]+"  Card: "+pr["name"] + "  Alert Level: "+pr["label"]
+                       self.slack.chat.post_message(self.slack_channel,msg, as_user=False)                
 
-
+               
                for i in new_commit :
+                   
                    self.tm.add_card_comment( card, i )
            else:
                pass

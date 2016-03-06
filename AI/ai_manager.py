@@ -65,6 +65,7 @@ if __name__ == "__main__":
    ar              = Analyize_Remote_Connectivity(rc, qc)
    cf              = py_cf.CF_Interpreter()
    me              = Monitor_Event_Queues( rc, qc, cf )
+   av              = Analyize_Valve_Current_Data(qc)
 
    cf.define_chain("Initialize_System",True)
    cf.insert_link( "link_1","Enable_Chain",[["Check_Online","Update_Trello","Update_Irrigation_Data","Monitor_Events","End_Of_Day_House_Keeping"]])
@@ -107,6 +108,7 @@ if __name__ == "__main__":
    cf.insert_link( "link_0",   "WaitTod", ["*","8","*","*"]) # GMT Time add +8 to time  or +9 in summer
    cf.insert_link( "link_1",  "Log",      ["made it here"])
    cf.insert_link( "link_2",  "One_Step", [ac.clear_controller_resets ] )
+   cf.insert_link( "link_3",  "One_Step", [av.analyize_data])
    cf.insert_link( "link_3",  "One_Step", [ac.clear_ping] )
    cf.insert_link( "link_5",  "WaitTod",  ["*",9,"*","*" ] ) # GMT Time add +8 to time  or +9 in summer
    cf.insert_link( "link_6",  "Reset",    [] )

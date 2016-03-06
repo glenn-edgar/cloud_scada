@@ -138,7 +138,7 @@ class Analyize_Valve_Current_Data:
                       temp = []
                except:
                   temp = []
-
+               print "text",text
                temp.append( text)
                open_card.properties["new_commit"] = json.dumps(temp)
 
@@ -188,7 +188,8 @@ if __name__ == "__main__":
    rc         = Rabbitmq_Remote_Connections()
    qc         = Query_Configuration()
    cd         = Update_Irrigation_Valve_Current_Draw(rc,qc,cc)
-
+   av         = Analyize_Valve_Current_Data(qc)
    cd.update_coil_current(0)
+   av.analyize_data()
    print mongodb_col.collection_names("Capped_Colections")
    

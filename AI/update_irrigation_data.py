@@ -274,6 +274,7 @@ class Update_Irrigation_Data():
 
               
        flow_data = self.get_flow_data( controller_node.properties["vhost"], "log_data:flow:"+schedule_name+":"+step_name,number)
+       count = 0
        for l in flow:  #nodes of flow values
             sensor_name = l.properties["name"]
             l.properties["mongodb_collection"] = "log_data:flow:"+schedule_name+":"+step_name+":"+sensor_name
@@ -318,6 +319,7 @@ class Update_Irrigation_Data():
                 data = self.cc.get_head_documents(l.properties["mongodb_collection"],1 )
                 if len(data) > 0:
                     ref_time_stamp = data[0]["time_stamp"]
+                    
                 else:
                     ref_time_stamp = 0
                 
@@ -325,6 +327,7 @@ class Update_Irrigation_Data():
                 for i in sensor_data:
                      
                      if i["time_stamp"] > ref_time_stamp:
+                         count = count +1
                          self.cc.insert( l.properties["mongodb_collection"], i )
                
             flow_limits        = self.qc.match_relation_property( "STEP","namespace", step_node.properties["namespace"],"FLOW_SENSOR_LIMIT" )  
@@ -336,6 +339,9 @@ class Update_Irrigation_Data():
 
        if diagnostic_card == None:
            return
+       if count == 0:
+           return
+       print "made it here"
        try:
             temp = json.loads( card.properties["new_commit"] )
             if type(temp) is not list:

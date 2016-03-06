@@ -258,6 +258,6 @@ if __name__ == "__main__":
    #ac.clear_controller_resets()
    #ac.update_controller_properties()
 
-  
-   #ar.analyize_data()
+   
+   ar.analyize_data()
    ac.update_controller_properties()
