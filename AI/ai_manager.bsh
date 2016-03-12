@@ -1,0 +1,10 @@
+while [ 1 ]
+do
+   echo "ai_manager"
+   python ai_manager.py 
+   sleep 10
+   echo "restarting ai manager"
+   
+
+done
+ 
