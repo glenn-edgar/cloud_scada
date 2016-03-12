@@ -43,7 +43,7 @@ class Transfer_Data:
         
    def update_card( self, card_node ):
        pr = card_node.properties
-       #print pr["org_name"], pr["board_name"],pr["list_name"],pr["name"]
+       #print pr["org_name"], pr["board_name"],pr["list_name"],pr["name"],pr["label"]
        card = self.tm.find_card(  pr["org_name"], pr["board_name"],pr["list_name"], pr["name"] )    
        
        self.tm.add_card_description(card, pr["description"] )
@@ -56,10 +56,11 @@ class Transfer_Data:
            if type(new_commit) is list:
                
                if len( new_commit ) > 0:
-               
+                  
                   self.update_board_color( pr )
                 
                   if pr["label"] != "green":
+                       print "made it here"
                        try:
                            self.slack.channels.create(self.slack_channel )
                        except:
@@ -75,7 +76,7 @@ class Transfer_Data:
            else:
                pass
        except:
-           pass
+           print "exception here"
        card_node.properties["new_commit"] = json.dumps([])
        card_node.push()
 

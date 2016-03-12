@@ -44,7 +44,7 @@ if __name__ == "__main__":
    slack_json = redis_startup.hget("MEDIA_DRIVERS","Slack")
    slack_dict   = json.loads( slack_json )
    token           = slack_dict["token"]
-   print "token",token
+   
    slack = Slacker(token)
  
    client          = MongoClient()
@@ -68,7 +68,7 @@ if __name__ == "__main__":
    av              = Analyize_Valve_Current_Data(qc)
 
    cf.define_chain("Initialize_System",True)
-   cf.insert_link( "link_1","Enable_Chain",[["Check_Online","Update_Trello","Update_Irrigation_Data","Monitor_Events","End_Of_Day_House_Keeping"]])
+   cf.insert_link( "link_1","Enable_Chain",[["Check_Online","Update_Trello","Monitor_Events","End_Of_Day_House_Keeping"]])
    cf.insert_link( "link_2","One_Step",[ac.clear_ping] )
    cf.insert_link( "link_3","One_Step",[ac.clear_controller_resets] )
    cf.insert_link( "link_4","Disable_Chain",[["Initialize_System"]])
@@ -92,23 +92,17 @@ if __name__ == "__main__":
    cf.insert_link( "link_2","One_Step",[ac.update_controller_properties] )
    cf.insert_link( "link_3","One_Step",[ar.analyize_data] )
    cf.insert_link( "link_3",  "One_Step",[idd.update_irrigation_data_cf] )
+   cf.insert_link( "link_2",  "One_Step",[cd.update_coil_current_cf] )
+   cf.insert_link( "link_3",  "One_Step", [av.analyize_data])
    cf.insert_link( "link_4","One_Step",[ td.update_cards ] )
    cf.insert_link( "link_5","Reset",[])
  
    
-   cf.define_chain("Update_Irrigation_Data",False )
-   cf.insert_link( "link_1",  "WaitTod", ["*",21,"*","*" ] ) # GMT Time add +8 to time  or +9 in summer
-   cf.insert_link( "link_0",  "Log",["made it here"])
-   cf.insert_link( "link_2",  "One_Step",[cd.update_coil_current_cf] )
-   cf.insert_link( "link_5",  "One_Step",[td.update_cards ] )
-   cf.insert_link( "link_6",  "WaitTod", ["*",22,"*","*" ] ) # GMT Time add +8 to time  or +9 in summer
-   cf.insert_link( "link_7",  "Reset",[])
  
    cf.define_chain("End_Of_Day_House_Keeping",False)
    cf.insert_link( "link_0",   "WaitTod", ["*","8","*","*"]) # GMT Time add +8 to time  or +9 in summer
    cf.insert_link( "link_1",  "Log",      ["made it here"])
    cf.insert_link( "link_2",  "One_Step", [ac.clear_controller_resets ] )
-   cf.insert_link( "link_3",  "One_Step", [av.analyize_data])
    cf.insert_link( "link_3",  "One_Step", [ac.clear_ping] )
    cf.insert_link( "link_5",  "WaitTod",  ["*",9,"*","*" ] ) # GMT Time add +8 to time  or +9 in summer
    cf.insert_link( "link_6",  "Reset",    [] )
