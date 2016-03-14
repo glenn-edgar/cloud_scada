@@ -48,23 +48,27 @@ class Monitor_Event_Queues():
    def process_card( self, card_dict, event_data ):
        card_node = card_dict["card_node"]
        label     = card_dict["card_action"]["label"]
-       print "event_data",event_data["event"]
-       print "card action",card_dict["card_action"].keys()
+       #print "event_data",event_data["event"]
+       #print "card action",card_dict["card_action"].keys()
        if label ==  "fromevent":
          label = event_data["status"].lower()
-         print "---------->",label,event_data
+         #print "---------->",label,event_data
          
        diag_text = "New Event:  "+event_data["event"] +"  Data: "+json.dumps(event_data)
-       #print "diag_text  ",diag_text
+       print "diag_text  ",diag_text, label
 
        try:
-           temp = json.loads( card.properties["new_commit"] )
+           
+           temp = json.loads( card_node.properties["new_commit"] )
            if type(temp) is not list:
+               print "is not a list"
                temp = []
        except:
+           print "exception"
            temp = []
        temp.append(diag_text)
-
+       print "temp",temp
+       print "len",len(temp)
        card_node.properties["new_commit"] = json.dumps(temp)
        card_node.properties["label"] = label
        card_node.push()
@@ -128,7 +132,7 @@ class Monitor_Event_Queues():
                            #print k,time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(data["time"])), data["status"], data["event"]
                            event = data["event"]
                            if cards.has_key(event):
-                              print "made it here"
+              
                               self.process_card( cards[event], data )
                            else:
                               pass

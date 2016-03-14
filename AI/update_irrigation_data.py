@@ -107,7 +107,6 @@ class Update_Irrigation_Data():
            try:
                current_data = json.loads( data[1][0]["data"] )
                if current_data["time"] > ref_time_stamp: 
-                   print "should not happen"
                    self.cc.insert( key, current_data )
                 
            except:
@@ -339,8 +338,8 @@ class Update_Irrigation_Data():
 
        if diagnostic_card == None:
            return
-       if count == 0:
-           return
+       #if count == 0:
+       #    return
        print "made it here"
        try:
             temp = json.loads( card.properties["new_commit"] )
@@ -348,7 +347,9 @@ class Update_Irrigation_Data():
                temp = []
        except:
             temp = []
+          
        temp.append(diag_text)
+       print diagnostic_card["name"],diag_text
        diagnostic_card.properties["new_commit"] = json.dumps(temp)
        diagnostic_card.properties["label"] = label
        diagnostic_card.push()
