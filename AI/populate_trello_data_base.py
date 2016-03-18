@@ -13,9 +13,6 @@ class Transfer_Data:
        self.slack         = slack
        self.slack_channel = slack_channel
 
-
- 
-
    def update_cards( self,*args ):
        controller_list = self.qc.match_labels("CONTROLLER")
        for i in controller_list:
