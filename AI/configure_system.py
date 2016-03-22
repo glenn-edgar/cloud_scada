@@ -90,7 +90,7 @@ if __name__ == "__main__" :
        cf.add_diagnostic_card(org_name,board_name,list_name,"fruit_trees_low_water:"+str(i) )
    for i in range(1,6):
        cf.add_diagnostic_card(org_name,board_name,list_name,"house:"+str(i) )
-   for i in range(1,15):
+   for i in range(1,16):
        cf.add_diagnostic_card(org_name,board_name,list_name,"flowers:"+str(i) )
    for i in range( 1,7):
        cf.add_diagnostic_card(org_name,board_name,list_name,"clean-filter:"+str(i) )
