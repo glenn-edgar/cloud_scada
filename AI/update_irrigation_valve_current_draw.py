@@ -52,7 +52,7 @@ class Update_Irrigation_Valve_Current_Draw():
               return_value =  current_data["current"] 
               
            else:
-              return_value = None
+              return_value = current_data["current"]
        except:
            return_value = None
        
@@ -61,11 +61,13 @@ class Update_Irrigation_Valve_Current_Draw():
 
 #"log_data:resistance_log_limit:"+controller_name+":"+valve_list[j]
    def get_coil_value_function_1( self, station_control, key, number, time_stamp):  # valve function for storing current
+ 
        if number != 0:
            index_list = range(0,number)
            index_list.reverse()
        else:
            index_list=[0]
+       
        return_value = []
        self.cc.create( key, self.cc_max_number,self.cc_db_size )
        if len( index_list ) :
@@ -77,7 +79,7 @@ class Update_Irrigation_Valve_Current_Draw():
             index_value = self.get_coil_value_function_1_helper(station_control,key, 0, time_stamp )
             if index_value != None:
                 return_value.append( self.get_coil_value_function_1_helper(station_control,key, 0, time_stamp ) ) 
-       return return_value
+       return [return_value[0]]
 
    def get_coil_value_function_2( self, station_control, key, number= None, time_stamp = None):
        data = station_control.redis_get([key])
@@ -94,6 +96,7 @@ class Update_Irrigation_Valve_Current_Draw():
            temp_list = i.split(":") # getting the pin number
            valid_list.append(temp_list[-1])
        for i in valve_list:
+
            if i.properties.has_key("time_stamp") == False:
                i.properties["time_stamp"] = time.time()
            if i.properties["name"] in valid_list:
@@ -107,8 +110,6 @@ class Update_Irrigation_Valve_Current_Draw():
                i.properties["active"]             = False
                i.properties["mongodb_collection"] = None
           
-           
-           
            i.properties["time_stamp"] = time.time()
            i.push()
  
