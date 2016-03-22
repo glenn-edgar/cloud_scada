@@ -260,9 +260,9 @@ class Update_Irrigation_Data():
           label = "red"
        if abs( coil_limit_std - curr_std ) > 1.:
           label = "red"
-       if abs( curr_max - curr_avg ) > 1.:
+       if abs( curr_max - curr_avg ) > 3.:
           label = "red"
-       if abs( curr_min - curr_avg) > 1.:
+       if abs( curr_min - curr_avg) > 3.:
           label = "red"
        diag_text = diag_text+"Current Limits  Avg: "+str(coil_limit_avg)+"   Std: "+str(coil_limit_std) +"\n"
        diag_text = diag_text+"Current Values  Avg: "+str(curr_avg) +"   Std: "+str(curr_std)+"   Max: "+str(curr_max)+"   Min: "+str(curr_min)+"\n"
@@ -296,19 +296,21 @@ class Update_Irrigation_Data():
             diag_sensor = diag_sensor+"Flow Limits  Avg: "+str(flow_limit_avg)+"   Std: "+str(flow_limit_std) +"\n"
             diag_sensor = diag_sensor+"Flow Values  Avg: "+str(flow_avg) +"   Std: "+str(flow_std)+"   Max: "+str(flow_max)+"   Min: "+str(flow_min)+"\n"
             diag_sensor = diag_sensor+"Aux Flow Values Slope Active: "+str(slope_active)+"   Slope: "+str(slope)+"   Intercept: "+str(intercept)+"\n"
-            label = "green"
+            new_label = "green"
             if abs( flow_limit_avg - flow_avg ) > 1: 
-                    label = "red"
+                    new_label = "red"
             if abs( flow_limit_std - flow_std ) > .5:
-               label = "red"
+               new_label = "red"
             if abs( flow_max - flow_avg ) > 2.:
-               label = "red"
+               new_label = "red"
             if abs( flow_min - flow_avg) > 2.:
-               label = "red"
-            if label == "green":
+               new_new_label = "red"
+            if new_label == "green":
                diag_sensor = "Flow OK:  \n"+diag_sensor
             else:
                diag_sensor = "**Flow Error Error: \n"+diag_sensor+"\n**"
+            if new_label == "red":
+               label = "red"
             diag_text = diag_text+diag_sensor
             l.properties["value"] = json.dumps(sensor_data[-1])
             l.properties["time_stamp"]  = sensor_data[-1]["time_stamp"]
