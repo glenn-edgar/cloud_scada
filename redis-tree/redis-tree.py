@@ -27,7 +27,7 @@ class Redis_Tree:
    def _expand_directory( self, key_list):
        temp_key_list = copy.copy( self.cwd )
        if ( len(key_list) > 0 ) and (key_list[0] == "/"):
-          temp_list = []
+          temp_key_list = []
           self._delete_element( key_list )
        else:
          temp_list = copy.copy( self.cwd )
@@ -38,6 +38,10 @@ class Redis_Tree:
               temp_key_list.append(i)
        return temp_key_list
 
+   # no cwd or special keys like / ..
+   def mk_raw_key( self, key_list):
+       key_string = self.sep+ self.sep.join( key_list )
+       return key_string 
 
    def mk_key( self, key_list):
        temp_list =  self._expand_directory(key_list)
@@ -52,6 +56,11 @@ class Redis_Tree:
    def get_cwd( self ): # cwd current working directory
        return self.cwd
 
+   def get_full_path( self, key_list):
+       return_value = copy.copy(self.cwd)
+       return_value.extend( key_list )
+       return return_value
+
    # special strings
    # .. delete previous key
    # /  start from scatch 
@@ -63,7 +72,8 @@ class Redis_Tree:
        return_value = set([])
        results = self.directory_full(  pattern )
        for i in results:
-           return_value.add(i[0])
+           if len(i) > 0:
+               return_value.add(i[0])
        return list(return_value)
                      
    def _process_directory_results( self, key_list ):
@@ -90,7 +100,7 @@ class Redis_Tree:
        for i in key_list:
            self.redis.delete(i)
 
-  
+    
  
 if __name__ == "__main__":
    # test driver
@@ -99,6 +109,8 @@ if __name__ == "__main__":
    print redis_tree.get_separator()
    print redis_tree.mk_key(["this","is","a","test"])
    print redis_tree.cwd
+
+
     
    #
    #  storing ref object
@@ -121,5 +133,46 @@ if __name__ == "__main__":
    print redis.keys("*")
    print redis_tree.directory_full( [] )
    print redis_tree.directory( [] )
-   redis_tree.delete( [] )
+   redis_tree.delete_all( [] )
    print redis_tree.directory_full( [] )
+
+   # now do cwd management
+   # repopulate redis db
+   
+   print "repopulating data base" 
+   for i in key:
+      temp_string = redis_tree.mk_key( i)
+      print i, i[2], temp_string
+      redis.set(temp_string,i[2])
+   print "current db"   
+   print redis.keys("*")
+   print "testing 1 level"
+   redis_tree.set_cwd(["1"])
+   print redis_tree.get_cwd()
+   print redis_tree.directory_full( [] )
+   print redis_tree.directory( [] )
+   print "two level"
+   redis_tree.set_cwd(["2"])
+   print redis_tree.get_cwd()
+   print redis_tree.directory_full( [] )
+   print redis_tree.directory( [] )
+
+   print "testing full path"
+   full_dir = redis_tree.directory_full([])
+   for i in full_dir:
+      print redis_tree.mk_raw_key( redis_tree.get_full_path(i) ) 
+
+
+   print "testing .."
+   redis_tree.set_cwd([".."])
+   print redis_tree.get_cwd()
+   print redis_tree.directory_full( [] )
+   print redis_tree.directory( [] )
+
+   print "testing /"
+   redis_tree.set_cwd(["/"])
+   print redis_tree.get_cwd()
+   print redis_tree.directory_full( [] )
+   print redis_tree.directory( [] )
+   print "deleting data base"
+   redis_tree.delete_all( [] )
