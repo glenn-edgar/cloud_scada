@@ -1,6 +1,7 @@
 
 import redis
 import redis_graph_common
+import re
 
 class Query_Configuration():
 
@@ -11,19 +12,39 @@ class Query_Configuration():
       
 
    def match_labels( self, label, starting_path = None ):
-       return  self.common.match( "*", label, "*" , starting_path)
-    
-   def match_relationship( self, relation_ship, starting_path = None):
-       return  self.common.match( relation_ship, label, "*", starting_path  )
-
-
-
-   def match_label_property( self, label, prop_index, prop_value, starting_path = None):
+       temp_list =  self.common.match( "*", label, "*" , starting_path)
        return_value = []
-       results = self.common.match( "*",label,"*", starting_path  )
+       for i in temp_list:
+           
+           temp_list =  i.split(self.common.sep )
+           
+           m_relationship,m_label,m_name = self.common.reverse_string_key( temp_list[-1] )
+           if label == m_label:
+              return_value.append(i)
+       return return_value
+
+   def match_relationship( self, relationship, starting_path = None):
+       temp_list =  self.common.match( relationship, "*", "*", starting_path  )
+       return_value = []
+       for i in temp_list:
+           
+           temp_list =  i.split(self.common.sep )
+           
+           m_relationship,m_label,m_name = self.common.reverse_string_key( temp_list[-1] )
+           if relationship == m_relationship:
+              return_value.append(i)
+       return return_value
+
+
+
+   def match_label_property( self, label, prop_key, prop_value, starting_path = None):
+       return_value = []
+       results = self.match_labels( label, starting_path  )
+       
        for i in results:
+          
           if self.redis.hexists(i,prop_key) == True:
-              if self.redis.hget(i,prop_key) == True:
+              if self.redis.hget(i,prop_key) == prop_value:
                   return_value.append(i)
 
        return return_value
@@ -36,24 +57,58 @@ class Query_Configuration():
          redis.hset(redis_key,i, new_properties[i] )
      
 
-   def match_relation_property_specific( self, label_name, property_name, property_value, label, return_name, return_value):
+   def match_label_property_specific( self, label_name, property_name, property_value, label, return_name, return_prop_value):
        return_value = []
        # first step
-       first_step = self.match_label_property( label_name, property_name, prop_value)
+       first_step = self.match_label_property( label_name, property_name, property_value)
        for i in first_step:
-           results = self.match_label_property( label, return_name, return_value,i)
+           
+           results = self.match_label_property( label, return_name, return_prop_value,i)
            return_value.extend(results)
        return return_value
 
-   def match_relation_property( self, label_name, property_name, property_value, label ):
+   def match_label_property_generic( self, label_name, property_name, property_value, label ):
        return_value = []
        # first step
-       first_step = self.match_label_property( label_name, property_name, prop_value)
+       first_step = self.match_label_property( label_name, property_name, property_value)
        for i in first_step:
            results = self.match_labels( label,i)
            return_value.extend(results)
        return return_value
 
+
+ 
+   def match_relationship_property( self, relationship, prop_key, prop_value, starting_path = None):
+       return_value = []
+       results = self.match_relationship( relationship, starting_path  )
+       
+       for i in results:
+          
+          if self.redis.hexists(i,prop_key) == True:
+              if self.redis.hget(i,prop_key) == prop_value:
+                  return_value.append(i)
+
+       return return_value
+
+
+   def match_relationship_property_specific( self, relationship, property_name, property_value, label, return_name, return_prop_value):
+       return_value = []
+       # first step
+       first_step = self.match_relationship_property( relationship, property_name, property_value)
+       for i in first_step:
+           
+           results = self.match_label_property( label, return_name, return_prop_value,i)
+           return_value.extend(results)
+       return return_value
+
+   def match_relationship_property_generic( self, relationship, property_name, property_value, label ):
+       return_value = []
+       # first step
+       first_step = self.match_relationship_property( relationship, property_name, property_value)
+       for i in first_step:
+           results = self.match_labels( label,i)
+           return_value.extend(results)
+       return return_value
        
 '''
 nicole = graph.merge_one('Person', 'name', 'Nicole')

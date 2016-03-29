@@ -6,20 +6,34 @@ import copy
 
 class Redis_Graph_Common:
    #tested
-   def __init__( self, redis, separator = ":", relationship_sep="#", label_sep="~", header_end=";" ):
+   def __init__( self, redis, separator = chr(130), relationship_sep=chr(131), label_sep=chr(132), header_end=chr(133) ):
       self.redis     = redis
       self.sep       = separator
       self.rel_sep   = relationship_sep
       self.label_sep = label_sep
       self.header_end  = header_end
+      
 
-   def _make_string_key( self, relationship,label,name):
+   def make_string_key( self, relationship,label,name):
        return relationship+self.rel_sep+label+self.label_sep+name+self.header_end
  
+   def reverse_string_key( self, string_key ):
+      
+       temp_1 = string_key.split(self.rel_sep)
+
+       relationship = temp_1[0]
+       temp_2 = temp_1[1].split(self.label_sep)
+ 
+       label = temp_2[0]
+       name  = temp_2[1][:-1]
+       return relationship,label,name
+
+
    def _convert_namespace( self, namespace):
        temp_value = []
+
        for i in namespace:
-          temp_value.append(self._make_string_key( i[0],i[1],i[2] ))
+          temp_value.append(self.make_string_key( i[0],i[1],i[2] ))
        key_string = self.sep+self.sep.join(temp_value)
        return  key_string
   
@@ -38,11 +52,13 @@ class Redis_Graph_Common:
    def match( self, relationship, label, name , starting_path=None):
        match_string =self._convert_namespace([[relationship,label,name]])
        if starting_path != None:
-          start_string = self._convert_namespace(starting_path) 
+          start_string = starting_path
        else:
           start_string = ""
-       match_key = start_string+"*"+match_string
+       match_key = start_string+"*"+match_string 
+       
        return self.redis.keys( match_key )
+      
 
    def delete_all(self): #tested
        keys = self.redis.keys(self.sep+"*")
