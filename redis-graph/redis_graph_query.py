@@ -11,29 +11,29 @@ class Query_Configuration():
       
 
    def match_labels( self, label, starting_path = None ):
-       return  self.common.match( *, label, * , starting_path)
+       return  self.common.match( "*", label, "*" , starting_path)
     
    def match_relationship( self, relation_ship, starting_path = None):
-       return  self.common.match( relation_ship, label, *, starting_path  )
+       return  self.common.match( relation_ship, label, "*", starting_path  )
 
 
 
    def match_label_property( self, label, prop_index, prop_value, starting_path = None):
        return_value = []
-       results = self.common.match( *,label,*, starting_path = None )
+       results = self.common.match( "*",label,"*", starting_path  )
        for i in results:
           if self.redis.hexists(i,prop_key) == True:
               if self.redis.hget(i,prop_key) == True:
                   return_value.append(i)
 
-      return return_value
+       return return_value
 
 
    
 
    def modify_properties( self, redis_key, new_properties):
        for i in new_properties.keys():
-         redis.hset(redis_key,i) = new_properties[i]
+         redis.hset(redis_key,i, new_properties[i] )
      
 
    def match_relation_property_specific( self, label_name, property_name, property_value, label, return_name, return_value):

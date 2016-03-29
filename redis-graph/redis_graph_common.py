@@ -29,8 +29,8 @@ class Redis_Graph_Common:
        new_name_space.append( [ relationship,label,name ] )
        
        redis_string = self._convert_namespace( new_name_space )
-       redis.hset(redis_string,"name",name)
-       redis.hset(redis_string,"namespace",self._convert_namespace(new_name_space))
+       self.redis.hset(redis_string,"name",name)
+       self.redis.hset(redis_string,"namespace",self._convert_namespace(new_name_space))
        return redis_string, new_name_space
 
    
@@ -42,12 +42,12 @@ class Redis_Graph_Common:
        else:
           start_string = ""
        match_key = start_string+"*"+match_string
-       return redis.keys( match_key )
+       return self.redis.keys( match_key )
 
    def delete_all(self): #tested
-       keys = redis.keys(self.sep+"*")
+       keys = self.redis.keys(self.sep+"*")
        for i in keys:
-          redis.delete(i)
+          self.redis.delete(i)
 
 
 if __name__ == "__main__":
