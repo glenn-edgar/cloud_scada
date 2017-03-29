@@ -1,4 +1,0 @@
-{% for i in vhost_list %}
-/usr/bin/python manage.py {{i}} &
-{% endfor %}
-/usr/bin/python manage.py {{vhost_main}}
