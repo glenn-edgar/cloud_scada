@@ -5,6 +5,11 @@ import time
 import redis
 import logging
 
+import influxdb_interface
+
+
+
+
 
           
 
@@ -18,8 +23,17 @@ if __name__ == "__main__":
    import time
    import os
 
-   def callback(ch, method, properties, body):
-         print(" [x] %r" % body)
+   influx_client = influxdb_interface.Influx_Interface()
+
+   def callback(ch, method, properties, json_data):
+        
+         data  = json.loads(json_data)
+         
+         if data.has_key("routing_key")  == True:
+            print "routing_key",data["routing_key"]
+            influx_client.process_messages( data["routing_key"], data, json_data)
+         else:
+             print "no routing key"
 
 
        

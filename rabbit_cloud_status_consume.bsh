@@ -1,0 +1,11 @@
+while [ 1 ]
+do
+   for i in {1..60}
+   do
+      echo "executing rabbit_cloud_status_consume $i"
+      /usr/bin/python rabbit_cloud_status_consume.py >>  /tmp/rabbit_cloud_status_consume.err  2>&1
+      mv /tmp/rabbit_cloud_status_consume.err /tmp/rabbit_cloud_status_consume.errr
+      sleep 5
+   done
+   python cloud_event_queue.py "reboot" "rabbit_cloud_status_consume.py"
+done
