@@ -28,10 +28,12 @@ if __name__ == "__main__":
    def callback(ch, method, properties, json_data):
         
          data  = json.loads(json_data)
-         
+        
          if data.has_key("routing_key")  == True:
             print "routing_key",data["routing_key"]
-            influx_client.process_messages( data["routing_key"], data, json_data)
+            if data["routing_key"] == "moisture_measurement":
+                
+                influx_client.process_messages( data["routing_key"], data, json_data)
          else:
              print "no routing key"
 

@@ -1,7 +1,9 @@
 #!/bin/bash
 cd /home/gedgar
 python passwords.py
-cd new_python/lacima_web
+cd  new_python
+./rabbit_cloud_status_consume.bsh&
+cd  lacima_web
 
 ./lacima_web.bsh&
 cd  ../
