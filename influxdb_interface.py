@@ -63,28 +63,29 @@ class Influx_Interface(object):
        
        tags                       = {}
        tags["namespace"]          = data["namespace"]
-       tags["time_stamp"]         = meas["time_stamp"]           
+       print data["namespace"]    
        fields                     = {}
-       fields["namespace"]        = data["namespace"]
+   
        fields["soil_temperature"] = meas["soil_temperature"]
        fields["air_temperature"] = meas["air_temperature"]
        fields["air_humidity"]    = meas["air_humidity"]
-       fields["time_stamp"]      = meas["time_stamp"]
+       print meas["time_stamp"]
       
    
        for i in range( len(meas["sensor_data"] )):
            tags["sensor_number"]   = i
-        
+           tags["description"]    = data["description_map"][i]  
+           tags["configuration"]  = int(meas["sensor_configuration"][i])       
            fields["sensor_number"] = i
            fields["depth"]          = float(data["depth_map"][i])
-           fields["description"]    = data["description_map"][i]  
-           fields["configuration"]  = float(meas["sensor_configuration"][i])
+ 
+           
            fields["value"]          = float(meas["sensor_data"][i]) 
            fields["resistive"]      = float(meas["resistive_data"][i])
 
      
            influx_body =       [{
-                                 "measurement": "moisture_a",
+                                 "measurement": "moisture_d",
                                  "time": meas["time_stamp"],                                 
                                  "tags": tags,
                                  "fields":     fields
