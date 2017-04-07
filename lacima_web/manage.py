@@ -72,6 +72,7 @@ class FlaskRealmDigestDB(authdigest.RealmDigestDB):
         return decorated
 
 
+ 
 
 
 @app.route('/',methods=["GET"])
