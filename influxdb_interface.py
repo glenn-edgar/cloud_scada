@@ -58,8 +58,10 @@ class Influx_Interface(object):
        print "depth_map",data["depth_map"],type(str(data["depth_map"])),type(json.loads(str(data["depth_map"])))
 
        print "description",data["description_map"],type(str(data["description_map"]))
+       print type(data["description_map"])
+       
        data["depth_map"] = json.loads(str(data["depth_map"]))
-       data["description_map"] = json.loads(str(data["description_map"]))
+       
        
        tags                       = {}
        tags["namespace"]          = data["namespace"]
