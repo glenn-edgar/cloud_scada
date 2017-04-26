@@ -17,7 +17,14 @@ class Influx_Interface(object):
        temp_dict["data_base"] = "moisture_data"
        temp_dict["retention"] = "104w"
        self.dispatch_dictionary["moisture_measurement"] = temp_dict
-       
+
+       temp_dict["routing_key"] = "eto_measurement"
+       temp_dict["parser"] = self.process_eto_data
+       temp_dict["data_base"] = "moisture_data"
+       temp_dict["retention"] = "104w"
+       self.dispatch_dictionary["eto_measurement"] = temp_dict
+ 
+      
        for key, dict in self.dispatch_dictionary.items():
           self.form_connection( key, dict )
        
@@ -47,6 +54,34 @@ class Influx_Interface(object):
        client.create_retention_policy("retention_policy", "104w", "1",dbname, default = True)
        
 
+
+
+   def process_eto_data( self , client, data, json_data ):
+     
+ 
+       
+       tags                       = {}
+       tags["namespace"]          = data["namespace"]
+       print data["namespace"]    
+       fields                     = {}
+   
+       fields["eto"]             =  data["eto"]
+       fields["rain"]            =  data["rain"]
+       print "tags", tags
+       print "fields",fields
+       influx_body =       [{
+                                 "measurement": "eto",
+                                 "time": data["time_stamp"],  # make it a day earlier                                 
+                                 "tags": tags,
+                                 "fields":     fields
+                                 
+
+                              }]
+           
+        
+             
+       client.write_points(influx_body)
+            
 
 
    def process_moisture_data( self , client, data, json_data ):

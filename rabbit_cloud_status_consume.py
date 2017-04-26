@@ -24,6 +24,7 @@ if __name__ == "__main__":
    import os
 
    influx_client = influxdb_interface.Influx_Interface()
+   routing_key_set = set(["moisture_management","eto_measurement"])
 
    def callback(ch, method, properties, json_data):
         
@@ -31,7 +32,7 @@ if __name__ == "__main__":
         
          if data.has_key("routing_key")  == True:
             print "routing_key",data["routing_key"]
-            if data["routing_key"] == "moisture_measurement":
+            if data["routing_key"] in routing_key_set: #influxdb routing keys
                 
                 influx_client.process_messages( data["routing_key"], data, json_data)
          else:
