@@ -24,7 +24,7 @@ if __name__ == "__main__":
    import os
 
    influx_client = influxdb_interface.Influx_Interface()
-   routing_key_set = set(["moisture_management","eto_measurement"])
+   routing_key_set = set(["moisture_management","eto_measurement","linux_hour_measurement","linux_daily_measurement"])
 
    def callback(ch, method, properties, json_data):
         

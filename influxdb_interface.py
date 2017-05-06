@@ -18,26 +18,40 @@ class Influx_Interface(object):
        temp_dict["retention"] = "104w"
        self.dispatch_dictionary["moisture_measurement"] = temp_dict
 
+       temp_dict = {}
        temp_dict["routing_key"] = "eto_measurement"
        temp_dict["parser"] = self.process_eto_data
        temp_dict["data_base"] = "moisture_data"
        temp_dict["retention"] = "104w"
        self.dispatch_dictionary["eto_measurement"] = temp_dict
  
-      
+       temp_dict = {}
+       temp_dict["routing_key"] = "linux_hour_measurement"
+       temp_dict["parser"] = self.process_linux_hourly_data
+       temp_dict["data_base"] = "linux_data"
+       temp_dict["retention"] = "104w"
+       self.dispatch_dictionary["linux_hour_measurement"] = temp_dict
+
+       temp_dict = {}
+       temp_dict["routing_key"] = "linux_daily_measurement"
+       temp_dict["parser"] = self.process_linux_daily_data
+       temp_dict["data_base"] = "linux_data"
+       temp_dict["retention"] = "104w"
+       self.dispatch_dictionary["linux_daily_measurement"] = temp_dict
+     
        for key, dict in self.dispatch_dictionary.items():
           self.form_connection( key, dict )
-       
-
+       #print self.dispatch_dictionary
 
    
 
 
    def process_messages( self, routing_key,data,  json_data ):
        
-       
+       #print "routing_key #####################",routing_key
        if self.dispatch_dictionary.has_key(routing_key ):
          temp_dict = self.dispatch_dictionary[routing_key]
+         #print "temp_dict",temp_dict
          temp_dict["parser"]( temp_dict["client"], data,json_data )
        else:
          print "event not recognized"
@@ -54,6 +68,72 @@ class Influx_Interface(object):
        client.create_retention_policy("retention_policy", "104w", "1",dbname, default = True)
        
 
+   def process_linux_hourly_data( self , client, data, json_data ):
+     
+ 
+       #print "hourly_data",data.keys()
+       #print "linux_memory",data["linux_memory_load"]
+       #print "linux_temperature",data["pi_temperature_hourly"]
+
+
+       print "namespace",data["namespace"]    
+
+
+       tags                       = {}
+       tags["namespace"]          = data["namespace"]
+       print data["namespace"]    
+       fields                     = {}
+   
+       fields["linux_memory_load"]             =  json.dumps(data["linux_memory_load"])
+       fields["pi_temperature_hourly"]         =  float(data["pi_temperature_hourly"])
+       #print "tags", tags
+       #print "fields",fields
+       influx_body =       [{
+                                 "measurement": "linux_hourly",
+                                 "time": data["time_stamp"],  # make it a day earlier                                 
+                                 "tags": tags,
+                                 "fields":     fields
+                                 
+
+                              }]
+           
+        
+             
+       client.write_points(influx_body)
+
+   def process_linux_daily_data( self , client, data, json_data ):
+     
+ 
+       #print "daily_data",data.keys()
+       #print "linux_daily_memory",data["linux_daily_memory"]
+       #print "linux_daily_disk",data["linux_daily_memory"]
+       #print "linux_daily_redis",data["linux_daily_redis"]
+      
+ 
+       
+       tags                       = {}
+       tags["namespace"]          = data["namespace"]
+       #print data["namespace"]    
+       fields                     = {}
+   
+       fields['linux_daily_disk']     =  json.dumps( data["linux_daily_disk"] )
+       fields["linux_daily_memory"]   =  json.dumps( data["linux_daily_memory"] )
+       fields["linux_daily_redis"]    =  json.dumps( data["linux_daily_redis"] )
+
+       #print "tags", tags
+       #print "fields",fields
+       influx_body =       [{
+                                 "measurement": "linux_daily",
+                                 "time": data["time_stamp"],  # make it a day earlier                                 
+                                 "tags": tags,
+                                 "fields":     fields
+                                 
+
+                              }]
+           
+        
+             
+       client.write_points(influx_body)
 
 
    def process_eto_data( self , client, data, json_data ):
