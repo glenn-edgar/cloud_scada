@@ -1,1 +1,2 @@
+git remote add origin  https://github.com/glenn-edgar/cloud_scada
 git pull origin master

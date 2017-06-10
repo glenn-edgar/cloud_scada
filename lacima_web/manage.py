@@ -80,6 +80,7 @@ class FlaskRealmDigestDB(authdigest.RealmDigestDB):
 def home():
 
    station_control = get_rabbit_interface()
+
    return_value = station_control.get_web_page("/index.html")
 
    if return_value[0] == True:
@@ -88,6 +89,8 @@ def home():
    else:
 
       return "No Connections"
+
+   return "No Connections"
 
 @app.route('/index.html',methods=["GET"])
 @authDB.requires_auth
