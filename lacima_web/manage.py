@@ -90,7 +90,7 @@ def home():
 
       return "No Connections"
 
-   return "No Connections"
+
 
 @app.route('/index.html',methods=["GET"])
 @authDB.requires_auth
