@@ -7,5 +7,5 @@ cd  lacima_web
 
 ./lacima_web.bsh&
 cd  ../
-influxd -config /etc/influxdb/influxdb.conf
+#influxd -config /etc/influxdb/influxdb.conf
 
