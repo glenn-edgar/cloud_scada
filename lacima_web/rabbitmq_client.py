@@ -33,8 +33,8 @@ class RabbitMq_Client(object):
 
     def on_response(self, ch, method, props, body):
         if self.corr_id == props.correlation_id:
-            temp = base64.b64decode(body)
-            self.response = json.loads(temp)
+            #temp = base64.b64decode(body)
+            self.response = json.loads(body)
             
      
 
