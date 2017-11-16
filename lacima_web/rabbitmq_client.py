@@ -2,7 +2,7 @@
 import pika
 import uuid
 import json
-import base64
+#import base64
 import os
 import time
 import redis
@@ -42,8 +42,8 @@ class RabbitMq_Client(object):
       try:
         
         time_out = time_out 
-        input_data = base64.b64encode(json.dumps(data))
-
+        #input_data = base64.b64encode(json.dumps(data))
+        input_data = json.dumps(data)
         self.response = None
         self.corr_id = str(uuid.uuid4())
         self.channel.basic_publish(exchange='',

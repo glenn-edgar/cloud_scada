@@ -2,7 +2,7 @@
 cd /home/gedgar
 python passwords.py
 cd  new_python
-./rabbit_cloud_status_consume.bsh&
+#./rabbit_cloud_status_consume.bsh&
 cd  lacima_web
 
 ./lacima_web.bsh&

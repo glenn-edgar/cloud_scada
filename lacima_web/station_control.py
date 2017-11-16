@@ -6,11 +6,20 @@ import os
 import time
 import redis
 import rabbitmq_client
-
+import gzip
+import io
 
 class Station_Control():
    def __init__( self ):
        pass
+
+   def gunzip_bytes_obj(self, bytes_obj):
+       in_ = io.BytesIO()
+       in_.write(bytes_obj)
+       in_.seek(0)
+       with gzip.GzipFile(fileobj=in_, mode='rb') as fo:
+           gunzipped_bytes_obj = fo.read()
+       return gunzipped_bytes_obj.decode()
 
 
    def close( self ):
@@ -27,8 +36,12 @@ class Station_Control():
       data["path"]                             =  path  
       
       reply                                    =  self.rpc_interface.call(  data, self.time_out)
+      
       if reply.has_key("results"):
-            return [ True, reply["results" ] ]                 
+            temp = base64.b64decode(reply["results"])
+            temp = self.gunzip_bytes_obj(temp)
+            temp  = json.loads(temp)
+            return [ True, temp ]                 
       else:
             return [ False ]
             
@@ -44,7 +57,11 @@ class Station_Control():
       reply                                    =  self.rpc_interface.call(  data, self.time_out)
       
       if reply.has_key("results"):
-            return [ True, reply["results" ] ]                 
+            temp = base64.b64decode(reply["results"])
+            temp = self.gunzip_bytes_obj(temp)
+            temp  = json.loads(temp)
+  
+            return [ True, temp ]                 
       else:
             return [ False ]
             
